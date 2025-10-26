@@ -1,6 +1,8 @@
-package org.danskells.bitstream;
+package org.danskells.bitstream.block;
 
-import java.util.Arrays;
+import org.danskells.bitstream.Block;
+import org.danskells.bitstream.StreamNode;
+
 import java.util.BitSet;
 
 public class BitmapBlock implements Block {

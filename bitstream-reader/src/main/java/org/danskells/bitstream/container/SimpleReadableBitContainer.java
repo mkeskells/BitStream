@@ -1,8 +1,12 @@
-package org.danskells.bitstream;
+package org.danskells.bitstream.container;
+
+import org.danskells.bitstream.Block;
+import org.danskells.bitstream.BitContainer;
+import org.danskells.bitstream.StreamNode;
 
 import java.util.Arrays;
 
-public class SimpleReadableBitContainer implements ReadableBitContainer {
+public class SimpleReadableBitContainer implements BitContainer {
 
     private final Block[] blocks;
 

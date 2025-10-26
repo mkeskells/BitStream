@@ -1,4 +1,7 @@
-package org.danskells.bitstream;
+package org.danskells.bitstream.block;
+
+import org.danskells.bitstream.Block;
+import org.danskells.bitstream.StreamNode;
 
 import java.util.Arrays;
 

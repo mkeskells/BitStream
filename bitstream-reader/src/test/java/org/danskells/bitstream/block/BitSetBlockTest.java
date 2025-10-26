@@ -1,4 +1,4 @@
-package org.danskells.bitstream;
+package org.danskells.bitstream.block;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class BitSetBlockTest {
+public class BitSetBlockTest {
 
     public static BitSet buildBitset(int... bits) {
         var bitset = new BitSet();
