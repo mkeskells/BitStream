@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/bitstream-reader/src/main/java/org/danskells/bitstream/StreamNode.java">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/bitstream-reader/src/main/java/org/danskells/bitstream/StreamNode.java" />
+              <option name="originalContent" value="package org.danskells.bitstream;&#10;&#10;public interface StreamNode {&#10;    /**&#10;     *&#10;     * @return The address of the next bit in the stream,&#10;     *  or {@link BitContainerStream#END_OF_STREAM} if the end of the stream is reached&#10;     */&#10;    long next();&#10;&#10;    /**&#10;     * @param start Advances the current position to the next bit set at or after start.&#10;     *              Must be greater than or equal to the current position&#10;     * @return The address of the next bit in the stream after `start`,&#10;     * or {@link BitContainerStream#END_OF_STREAM} if the end of the stream is reached&#10;     */&#10;    long skipToNext(long start);&#10;}&#10;" />
+              <option name="updatedContent" value="package org.danskells.bitstream;&#10;&#10;public interface StreamNode {&#10;    /**&#10;     *&#10;     * @return The address of the next bit in the stream,&#10;     *  or {@link BitContainerStream#END_OF_STREAM} if the end of the stream is reached&#10;     */&#10;    long next();&#10;&#10;    /**&#10;     * @param start Advances the current position to the next bit set at or after start.&#10;     *              Must be greater than or equal to the current position&#10;     * @return The address of the next bit in the stream after `start`,&#10;     * or {@link BitContainerStream#END_OF_STREAM} if the end of the stream is reached&#10;     */&#10;    long skipToNext(long start);&#10;}&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

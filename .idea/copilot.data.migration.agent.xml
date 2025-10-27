@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AgentMigrationStateService">
+    <option name="pendingSessionIds">
+      <option value="090a7fdc-48dd-498d-957e-2c2feb927de1" />
+    </option>
+    <option name="pendingTurns">
+      <map>
+        <entry key="090a7fdc-48dd-498d-957e-2c2feb927de1">
+          <value>
+            <set>
+              <option value="8a46305b-9f5a-48da-92d8-0803d4ea9a62" />
+              <option value="8cf8631e-285d-462d-a544-0f971a51563c" />
+              <option value="af2fff84-52bd-41c7-9169-a8c5e52d6d17" />
+              <option value="a3898a2b-e38e-468d-83df-a45d22be256e" />
+              <option value="5efc8a89-0575-4864-aa8f-c9cfa2ddc3d9" />
+            </set>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <pendingWorkingSetItems>
+      <entry key="090a7fdc-48dd-498d-957e-2c2feb927de1">
+        <set>
+          <option value="file://$PROJECT_DIR$/README.md" />
+          <option value="file://$PROJECT_DIR$/LICENSE" />
+          <option value="file://$PROJECT_DIR$/bitstream-reader/src/main/java/org/danskells/bitstream/StreamNode.java" />
+          <option value="file://$PROJECT_DIR$/bitstream-reader/src/main/java/org/danskells/bitstream/container/SimpleReadableBitContainer.java" />
+          <option value="file://$PROJECT_DIR$/bitstream-writer/pom.xml" />
+          <option value="file://$PROJECT_DIR$/bitstream-writer/src/main/java/org/danskells/bitstream/writer/BitStreamWriter.java" />
+          <option value="file://$PROJECT_DIR$/bitstream-writer/src/main/java/org/danskells/bitstream/writer/BitmapBlockWriter.java" />
+          <option value="file://$PROJECT_DIR$/bitstream-writer/src/test/java/org/danskells/bitstream/writer/BitmapBlockWriterTest.java" />
+        </set>
+      </entry>
+    </pendingWorkingSetItems>
+  </component>
+</project>
