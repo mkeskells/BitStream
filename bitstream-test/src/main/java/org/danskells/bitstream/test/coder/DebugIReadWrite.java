@@ -17,7 +17,17 @@ public class DebugIReadWrite implements IRead, IWrite {
     USHORT_START,
     ULONG_CONTINUE,
     UINT_CONTINUE,
-    USHORT_CONTINUE,
+    USHORT_CONTINUE;
+    public String full() {
+      return this.name()+"("+this.ordinal()+")";
+    }
+    private static Type[] all = values();
+    public static String fullFromOrdinal(int ordinal) {
+      if (ordinal < 0 || ordinal >= all.length) {
+        return "Unknown("+ordinal+")";
+      }
+      return all[ordinal].full();
+    }
   }
 
 
@@ -27,55 +37,55 @@ public class DebugIReadWrite implements IRead, IWrite {
   @Override
   public long readULong(ByteBuffer buffer) {
     long result = read(buffer, Type.ULONG_START);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
 
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
 
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
 
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
-    result = result <<4 + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
+    result = (result <<4) + read(buffer, Type.ULONG_CONTINUE);
     return result;
   }
 
   @Override
   public int readUInt(ByteBuffer buffer) {
     int result = read(buffer, Type.UINT_START);
-    result = result <<4 + read(buffer, Type.UINT_CONTINUE);
-    result = result <<4 + read(buffer, Type.UINT_CONTINUE);
-    result = result <<4 + read(buffer, Type.UINT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.UINT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.UINT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.UINT_CONTINUE);
 
-    result = result <<4 + read(buffer, Type.UINT_CONTINUE);
-    result = result <<4 + read(buffer, Type.UINT_CONTINUE);
-    result = result <<4 + read(buffer, Type.UINT_CONTINUE);
-    result = result <<4 + read(buffer, Type.UINT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.UINT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.UINT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.UINT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.UINT_CONTINUE);
     return result;
   }
 
   @Override
   public char readUShort(ByteBuffer buffer) {
     int result = read(buffer, Type.USHORT_START);
-    result = result <<4 + read(buffer, Type.USHORT_CONTINUE);
-    result = result <<4 + read(buffer, Type.USHORT_CONTINUE);
-    result = result <<4 + read(buffer, Type.USHORT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.USHORT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.USHORT_CONTINUE);
+    result = (result <<4) + read(buffer, Type.USHORT_CONTINUE);
     return (char) result;
   }
 
   private byte read(ByteBuffer buffer, Type type) {
     var read = buffer.get();
-    var typeRead = read >> 4;
+    var typeRead = read >>> 4;
     if (typeRead != type.ordinal()) {
-      throw new IllegalStateException("Expected type " + type + " but got " + Type.values()[typeRead]);
+      throw new IllegalArgumentException("Expected type " + type.full() +" but got " + Type.fullFromOrdinal(typeRead));
     }
     return (byte) (read & 0x0F);
   }
@@ -127,6 +137,7 @@ public class DebugIReadWrite implements IRead, IWrite {
   }
 
   private void write(ByteBuffer buffer, Type debugCIntType, long i) {
-    buffer.put((byte)(debugCIntType.ordinal() <<4 + (i & 0xF)));
+    buffer.put((byte)((debugCIntType.ordinal() <<4) | (i & 0xF)));
+
   }
 }
