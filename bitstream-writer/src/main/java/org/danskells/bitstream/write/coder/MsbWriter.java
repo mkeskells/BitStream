@@ -30,49 +30,51 @@ public class MsbWriter implements IWrite {
 
   @Override
   public void writeUnsigned(ByteBuffer buffer, long value) {
-    switch (Long.numberOfLeadingZeros(value)) {
+    switch (LEADING_ZERO_TO_SIZE[Long.numberOfLeadingZeros(value)]) {
       //< 128
-      case 57, 58, 59, 60, 61, 62, 63, 64:
+      case 1:
         buffer.put((byte) (value));
         return;
-      case 50, 51, 52, 53, 54, 55, 56:
+      case 2:
         buffer.put((byte) (0x80 | (value & 0x3f)));
         buffer.put((byte) (value >>> 6));
         return;
-      case 43, 44, 45, 46, 47, 48, 49:
+      case 3:
         buffer.put((byte) (0xC0 | (value & 0x1f)));
         buffer.putShort((short) (value >>> 5));
         return;
-      case 36, 37, 38, 39, 40, 41, 42:
+      case 4:
         buffer.put((byte) (0xE0 | (value & 0x0f)));
         buffer.putShort((short) (value >>> 4));
         buffer.put((byte) (value >>> 20));
         return;
-      case 29, 30, 31, 32, 33, 34, 35:
+      case 5:
         buffer.put((byte) (0xF0 | (value & 0x07)));
         buffer.putInt((int) (value >>> 3));
         return;
-      case 22, 23, 24, 25, 26, 27, 28:
+      case 6:
         buffer.put((byte) (0xF8 | (value & 0x03)));
         buffer.putInt((int) (value >>> 2));
         buffer.put((byte) (value >>> 34));
         return;
-      case 15, 16, 17, 18, 19, 20, 21:
+      case 7:
         buffer.put((byte) (0xFC | (value & 0x01)));
         buffer.putInt((int) (value >>> 1));
         buffer.putShort((short) (value >>> 33));
         return;
-      case 8, 9, 10, 11, 12, 13, 14:
+      case 8:
         buffer.put((byte) (0xFE));
         buffer.putInt((int) (value));
         buffer.putShort((short) (value >>> 32));
         buffer.put((byte) (value >>> 48));
         return;
-      default:
+      case 9:
         buffer.put((byte) (0xFF));
         //it not worth trying to save a bit here, so break the pattern
         buffer.putLong(value);
         return;
+      default:
+          throw new IllegalStateException("Unreachable");
     }
   }
 
@@ -84,5 +86,31 @@ public class MsbWriter implements IWrite {
   @Override
   public void writeUnsigned(ByteBuffer buffer, char value) {
     writeUnsigned(buffer, (long) value);
+  }
+
+  private final static byte[] LEADING_ZERO_TO_SIZE = new byte[]{
+    9, 9, 9, 9, 9, 9, 9, 9, //0  - 7
+    8, 8, 8, 8, 8, 8, 8,    //8  - 14
+    7, 7, 7, 7, 7, 7, 7,    //15 - 21
+    6, 6, 6, 6, 6, 6, 6,    //22 - 28
+    5, 5, 5, 5, 5, 5, 5,    //29 - 35
+    4, 4, 4, 4, 4, 4, 4,    //36 - 42
+    3, 3, 3, 3, 3, 3, 3,    //43 - 49
+    2, 2, 2, 2, 2, 2, 2,    //50 - 56
+    1, 1, 1, 1, 1, 1, 1, 1  //57 - 64
+  };
+  @Override
+  public int sizeOf(long value) {
+    return LEADING_ZERO_TO_SIZE[Long.numberOfLeadingZeros(value)];
+  }
+
+  @Override
+  public int sizeOf(int value) {
+    return sizeOf(Integer.toUnsignedLong(value));
+  }
+
+  @Override
+  public int sizeOf(char value) {
+    return sizeOf((long)value);
   }
 }
