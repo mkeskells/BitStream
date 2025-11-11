@@ -1,24 +1,24 @@
-A BitStream can contain a series of block, and each block is at least conseptually a file.
-The format of a block should allow to be parsed into a java data structure, or be accessed in a native memory
+A BitStream can contain a series of blocks, in a container. Each container is at least conseptually a file.
+The format of a container and block can parsed into a java data structure, or be accessed in a native memory
 
 
-# File Structure
-the file contains a header, with metadata and index, and then blocks.
+# Container Structure
+the container contains a header, with metadata and index, and then blocks.
 
 ```
 +------------------+
-| File Header      |
+| Container Header |
 +------------------+
-| Block Stream 1   |
+| Block 1          |
 +------------------+
-| Block Stream 2   |
+| Block 2          |
 +------------------+
 | ...              |
 +------------------+
-| Block Stream N   |
+| Block N          |
 +------------------+
 ```
-The file header will contain some index, probably a skip list, but not defined yet
+The containe header will contain some index, probably a skip list, but not defined yet
 
 
 Each block contains a packed type and type data, followed by the binary data
