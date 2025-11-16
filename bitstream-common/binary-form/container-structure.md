@@ -60,26 +60,17 @@ ids - bitmap-block  -> 0
 others are reserved for future use.
 probably small versions of the above
 
-examples of block specific data (hex), assuming compressed 7 bit vint
+## Examples
+[simple bitmap](examples/bitmap/ex-01.md)
 
-a bitmap
-```txt
-04   #         -> control byte 
-     #   000   -> block type = bitmap-block
-     #   00100 -> block-length = 4 bytes
-01   #         -> bit-offsets = 0, 1 (0 is implied)
-04   #         -> bit offsets = 11
-05   #         -> bit offsets = 17, 19
-ff   #         -> bit offsets = 25 .. 32
-```
 a rle-block
 ```txt
 22   #         -> control byte
      #   001   -> block type = rle-block
      #   00010 -> block-length = 2 pairs
 04   #   (vint 4) length of block in bytes
-07   #   (vint 7) length            -> bit offsets 0 ..7 
-80   #   (vint 2 bytes) 
+07   #   (vint 7) length            -> bit offsets 0 ..7
+80   #   (vint 2 bytes)
 01   #   (vint 129) offest 129
 30   #   (vint 48) length 48        -> bit offsets 136 .. 184
 ```
@@ -89,7 +80,53 @@ an array-block
      #   010   -> block type = array-block
      #   00010 -> block-length = 2 values
                                     -> bit position 0 implied
-07   #   (vint 7)                   -> bit position 8 
+07   #   (vint 7)                   -> bit position 8
+c4   #   (vint 3 bytes, lower 5 bits = 00100)
+47
+80   #   (vint 0x8047 << 5 + 3 = 0x1008E0 (or 1051872 in decimal) + 3 = 1051875
+                                    -> bit position 1051883
+```
+     # 000            -> block type = Bitmap Block
+     # 00100          -> (block specific) bytes in bitmap: 5 (1 based)
+                      -> bit 0 is implied
+01   #  byte[0]       -> bits set: 1
+04   #  byte[1]       -> bits set: 11
+05   #  byte[2]       -> bits set: 17, 19
+FF   #  byte[3]       -> bits set: 25, 26, 27, 28, 29, 30, 31, 32
+```
+
+
+a bitmap
+```txt
+04   #                -> control byte
+     # 000            -> block type = Bitmap Block
+     # 00100          -> (block specific) bytes in bitmap: 5 (1 based)
+                      -> bit 0 is implied
+01   #  byte[0]       -> bits set: 1
+04   #  byte[1]       -> bits set: 11
+05   #  byte[2]       -> bits set: 17, 19
+FF   #  byte[3]       -> bits set: 25, 26, 27, 28, 29, 30, 31, 32
+```
+
+
+a rle-block
+```txt
+22   #         -> control byte
+     #   001   -> block type = rle-block
+     #   00010 -> block-length = 2 pairs
+04   #   (vint 4) length of block in bytes
+07   #   (vint 7) length            -> bit offsets 0 ..7
+80   #   (vint 2 bytes)
+01   #   (vint 129) offest 129
+30   #   (vint 48) length 48        -> bit offsets 136 .. 184
+```
+an array-block
+```txt
+42   #         -> control byte
+     #   010   -> block type = array-block
+     #   00010 -> block-length = 2 values
+                                    -> bit position 0 implied
+07   #   (vint 7)                   -> bit position 8
 c4   #   (vint 3 bytes, lower 5 bits = 00100)
 47
 80   #   (vint 0x8047 << 5 + 3 = 0x1008E0 (or 1051872 in decimal) + 3 = 1051875

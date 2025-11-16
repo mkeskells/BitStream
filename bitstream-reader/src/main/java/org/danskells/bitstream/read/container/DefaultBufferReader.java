@@ -1,4 +1,4 @@
-package org.danskells.bitstream.read.storage;
+package org.danskells.bitstream.read.container;
 
 import org.danskells.bitstream.common.block.BlockType;
 import org.danskells.bitstream.common.block.ControlByte;
@@ -10,14 +10,14 @@ import org.danskells.bitstream.read.coder.IRead;
 import java.nio.ByteBuffer;
 import java.util.BitSet;
 
-public class DefaultFileReader extends FileReader {
+public class DefaultBufferReader {
 
   private final ByteBuffer buffer;
   private final IRead intReader;
 
   private final FileHeader header;
   private long currentBlockBitAddress = 0;
-  DefaultFileReader(ByteBuffer buffer, IRead intReader) {
+  DefaultBufferReader(ByteBuffer buffer, IRead intReader) {
     this.buffer = buffer;
     this.intReader = intReader;
     this.header = readHeader();
@@ -32,6 +32,7 @@ public class DefaultFileReader extends FileReader {
     var control = buffer.get();
     var blockType = BlockType.ofId(control >>> ControlByte.BLOCK_TYPE_SHIFT);
     var blockSpecific = control & ControlByte.BLOCK_SPECIFIC_MASK;
+    showControl(currentBlockBitAddress, control, blockType, blockSpecific);
     switch(blockType) {
       case BITMAP:{
         BitSet allBits = new BitSet(blockSpecific << 3 +1); // +1 because 0 is implied
@@ -41,6 +42,8 @@ public class DefaultFileReader extends FileReader {
         // Convert bytes to bits
         for (int i = 0; i < blockSpecific; i++) {
             byte currentByte = buffer.get();
+           showBitset(i, currentByte);
+            // ...existing code...
             for (int bit = 0; bit < 8; bit++) {
                 if ((currentByte & (1 << bit)) != 0) {
                     allBits.set((i * 8) + bit+1); // +1 because 0 is implied
@@ -71,5 +74,13 @@ public class DefaultFileReader extends FileReader {
     }
 
     return null;
+  }
+
+  protected void showControl(long currentBlockBitAddress, byte control, BlockType blockType, int blockSpecific) {
+    // Override in subclass for debug output
+  }
+
+  protected void showBitset(int index, byte currentByte) {
+    // Override in subclass for debug output
   }
 }
