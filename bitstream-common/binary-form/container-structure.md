@@ -59,9 +59,19 @@ ids - bitmap-block  -> 0
       list-block    -> 2
 others are reserved for future use.
 probably small versions of the above
+e.g. to consider
+single value arrays - i.e. list-block with one value, 2 values with block specific 
+single rle block (i.e. rle-block with one pair length in block specific)
 
 ## Examples
+### Bitmaps
 [simple bitmap](examples/bitmap/ex-01.md)
+
+### RLE Blocks
+
+### List Blocks
+[simple list](examples/array/ex-01.md)
+
 
 a rle-block
 ```txt
@@ -80,11 +90,12 @@ an array-block
      #   010   -> block type = array-block
      #   00010 -> block-length = 2 values
                                     -> bit position 0 implied
+04   #   (vint 4) length of block in bytes
 07   #   (vint 7)                   -> bit position 8
 c4   #   (vint 3 bytes, lower 5 bits = 00100)
 47
-80   #   (vint 0x8047 << 5 + 3 = 0x1008E0 (or 1051872 in decimal) + 3 = 1051875
-                                    -> bit position 1051883
+80   #   (vint 0x8047 << 5 + 4 = 0x1008E0 (or 1050848 in decimal) + 4 = 1050852
+                              -> bit position 1050852 + 8 + 1 = 1050861
 ```
      # 000            -> block type = Bitmap Block
      # 00100          -> (block specific) bytes in bitmap: 5 (1 based)

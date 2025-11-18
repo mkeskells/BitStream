@@ -12,12 +12,12 @@ import java.util.BitSet;
 
 public class DefaultBufferReader {
 
-  private final ByteBuffer buffer;
-  private final IRead intReader;
+  protected final ByteBuffer buffer;
+  protected final IRead intReader;
 
   private final FileHeader header;
-  private long currentBlockBitAddress = 0;
-  DefaultBufferReader(ByteBuffer buffer, IRead intReader) {
+  protected long currentBlockBitAddress = 0;
+  protected DefaultBufferReader(ByteBuffer buffer, IRead intReader) {
     this.buffer = buffer;
     this.intReader = intReader;
     this.header = readHeader();
@@ -32,55 +32,63 @@ public class DefaultBufferReader {
     var control = buffer.get();
     var blockType = BlockType.ofId(control >>> ControlByte.BLOCK_TYPE_SHIFT);
     var blockSpecific = control & ControlByte.BLOCK_SPECIFIC_MASK;
-    showControl(currentBlockBitAddress, control, blockType, blockSpecific);
-    switch(blockType) {
-      case BITMAP:{
-        BitSet allBits = new BitSet(blockSpecific << 3 +1); // +1 because 0 is implied
+    return switch (blockType) {
+      case BITMAP -> decodeBitmapBlock(control, blockSpecific);
+      case RUN_LENGTH -> decodeRleBlock(control, blockSpecific);
+      case LIST-> decodeListBlock(control, blockSpecific);
+    };
+  }
 
-        allBits.set(0); //0 is implied to be present
+  protected LongArrayBlock decodeListBlock(byte control, int size) {
+    var blockLength = readUInt(buffer);
+    var pos = buffer.position();
+    var longs = new long[size + 1];
+    longs[0] = currentBlockBitAddress;
+    for (int i = 1; i <= size; i++) {
+      var delta = readULong(buffer) + 1;
+      currentBlockBitAddress += delta;
+      longs[i] = currentBlockBitAddress;
+    }
+    assert buffer.position() - pos == blockLength : "Read length does not match block length";
+    return new LongArrayBlock(longs);
+  }
 
-        // Convert bytes to bits
-        for (int i = 0; i < blockSpecific; i++) {
-            byte currentByte = buffer.get();
-           showBitset(i, currentByte);
-            // ...existing code...
-            for (int bit = 0; bit < 8; bit++) {
-                if ((currentByte & (1 << bit)) != 0) {
-                    allBits.set((i * 8) + bit+1); // +1 because 0 is implied
-                }
-            }
-        }
-        return new BitmapBlock(allBits);
-      }
-      case RUN_LENGTH: {
-        var blockLength = intReader.readUInt(buffer);
-        var startValue = intReader.readUInt(buffer);
+  protected Block decodeRleBlock(byte control, int blockSpecific)
+    {
+      var blockLength = intReader.readUInt(buffer);
+      var startValue = intReader.readUInt(buffer);
 
-        throw new UnsupportedOperationException();
-      }
-      case LIST: {
-        var blockLength = intReader.readUInt(buffer);
-        var length = intReader.readUInt(buffer);
-        var longs = new long[length + 1];
-        longs[0] = currentBlockBitAddress;
-        for (int i = 1; i <= length; i++) {
-          var delta = intReader.readULong(buffer);
-          currentBlockBitAddress += delta;
-          longs[i] = currentBlockBitAddress;
-        }
-        return new LongArrayBlock(longs);
-
-      }
+      throw new UnsupportedOperationException();
     }
 
-    return null;
+
+  protected BitmapBlock decodeBitmapBlock( byte control, int blockSpecific) {
+    BitSet allBits = new BitSet(blockSpecific << 3 +1); // +1 because 0 is implied
+
+    allBits.set(0); //0 is implied to be present
+
+    // Convert bytes to bits
+    for (int i = 0; i < blockSpecific; i++) {
+      byte currentByte = buffer.get();
+      addBitsToBitmap(currentByte, allBits, i);
+    }
+    return new BitmapBlock(allBits);
+
   }
 
-  protected void showControl(long currentBlockBitAddress, byte control, BlockType blockType, int blockSpecific) {
-    // Override in subclass for debug output
+  protected void addBitsToBitmap(byte currentByte, BitSet allBits, int index) {
+    for (int bit = 0; bit < 8; bit++) {
+      if ((currentByte & (1 << bit)) != 0) {
+        allBits.set((index * 8) + bit+1); // +1 because 0 is implied
+      }
+    }
   }
 
-  protected void showBitset(int index, byte currentByte) {
-    // Override in subclass for debug output
+
+  protected int readUInt(ByteBuffer buffer) {
+    return intReader.readUInt(buffer);
+  }
+  protected long readULong(ByteBuffer bufferr) {
+    return intReader.readULong(buffer);
   }
 }
