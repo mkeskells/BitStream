@@ -5,14 +5,11 @@ import org.danskells.bitstream.read.Block;
 import org.danskells.bitstream.read.block.BitmapBlock;
 import org.danskells.bitstream.read.block.LongArrayBlock;
 import org.danskells.bitstream.read.coder.IRead;
-import org.danskells.bitstream.read.coder.MsbReader;
 import org.danskells.bitstream.read.container.DefaultBufferReader;
 
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.List;
 import java.util.Stack;
 
 public class DebugBufferReader extends DefaultBufferReader {
@@ -28,7 +25,7 @@ public class DebugBufferReader extends DefaultBufferReader {
   @Override
   protected LongArrayBlock decodeListBlock(byte control, int size) {
     showControl( control, BlockType.LIST, size);
-    intReaderTl.get().push(new LongArrayIntReaderTracer(intReader));
+    intReaderTl.get().push(new LongArrayIntReaderTracer(buffer, out, intReader));
     try {
       return super.decodeListBlock(control, size);
     } finally {
@@ -100,44 +97,6 @@ public class DebugBufferReader extends DefaultBufferReader {
     this.out = newOut;
   }
 
-  private abstract class IntTracer {
-    private final IRead intReader;
-
-    public IntTracer(IRead intReader) {
-      this.intReader = intReader;
-    }
-    protected void traceReadLong(int posBefore, int posAfter, long result) {
-      if (intReader == MsbReader.INSTANCE) {
-        traceMsbReadLong(posBefore, posAfter, result);
-      } else {
-        throw new IllegalStateException("Unexpected intReader" + intReader.getClass().getName());
-      }
-    }
-    private void traceMsbReadLong(int posBefore, int posAfter, long result) {
-      var length = posAfter - posBefore;
-      if (length == 1) {
-        out.printf("%02X   #   (vint 1 byte) %d", result, result);
-      } else {
-        var bits = String.format("%8s", Integer.toBinaryString(buffer.get(posBefore) & 0xFF)).replace(' ', '0');
-        var lowerBits = bits.substring(Math.min(length, 8), 8);
-        out.printf("%02X   #   (vint %d bytes, lower %d bits %s = %d%n", buffer.get(posBefore), length, lowerBits.length(), lowerBits, Integer.parseInt(lowerBits, 2));
-        var hex = "";
-        for (int i = posBefore + 1; i < posAfter - 1; i++) {
-          out.printf("%02X%n", buffer.get(i));
-          hex = String.format("%02X", buffer.get(i)) + hex;
-        }
-        hex = String.format("%02X", buffer.get(posAfter - 1)) + hex;
-        out.printf("%02X   #   (vint 0x%s << %d + %d = %d%n", buffer.get(posAfter - 1), hex, lowerBits.length(), Integer.parseInt(lowerBits, 2), result);
-        var check = (Integer.parseInt(hex, 16) << lowerBits.length()) + (Integer.parseInt(lowerBits, 2));
-        if (check != result) {
-          throw new IllegalStateException(String.format("ERROR: Computed value %d does not match read value %d%n", check, result));
-        }
-      }
-    }
-
-    abstract void trace(int posBefore, int posAfter, long result);
-  }
-
 
   @Override
   protected int readUInt(ByteBuffer buffer) {
@@ -159,28 +118,5 @@ public class DebugBufferReader extends DefaultBufferReader {
     return result;
   }
 
-  private class LongArrayIntReaderTracer extends IntTracer {
-    LongArrayIntReaderTracer(IRead intReader) {
-      super(intReader);
-    }
-    int index = 0;
-    long offset = 0;
-    List<Long> values = new ArrayList<>();
-    @Override
-    public void trace(int posBefore, int posAfter, long result) {
-      switch(index++ ) {
-        case 0 -> {
-          out.printf("%n     # value #1 is implied (0) %n     # Read length of block in bytes%n");
-        }
-        default -> {
-          out.printf("%n     # Read value #%d (%d) -> bit position %d + %d  + 1 = %d%n", index, result, offset, result, offset + result + 1);
-          offset = offset + result + 1;
-        }
-      }
-      values.add(offset);
-
-      traceReadLong(posBefore, posAfter, result);
-    }
-  }
 }
 
