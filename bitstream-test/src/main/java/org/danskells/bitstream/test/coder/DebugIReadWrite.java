@@ -138,6 +138,20 @@ public class DebugIReadWrite implements IRead, IWrite {
 
   private void write(ByteBuffer buffer, Type debugCIntType, long i) {
     buffer.put((byte)((debugCIntType.ordinal() <<4) | (i & 0xF)));
+  }
 
+  @Override
+  public int sizeOf(long value) {
+    return 16;
+  }
+
+  @Override
+  public int sizeOf(int value) {
+    return 8;
+  }
+
+  @Override
+  public int sizeOf(char value) {
+    return 4;
   }
 }

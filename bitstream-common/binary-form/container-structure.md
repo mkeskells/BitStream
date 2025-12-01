@@ -18,7 +18,7 @@ the container contains a header, with metadata and index, and then blocks.
 | Block N          |
 +------------------+
 ```
-The containe header will contain some index, probably a skip list, but not defined yet
+The container header will contain some index, probably a skip list, but not defined yet
 
 
 Each block contains a packed type and type data, followed by the binary data
