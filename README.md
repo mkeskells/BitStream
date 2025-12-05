@@ -18,10 +18,11 @@ The project is organized into multiple Maven modules:
 ## Features
 
 - Efficient bit stream operations focussed on small memory footprint
-- Stream composition using logocal operation - AND/OR nodes etc
+- Stream composition using logical operation - AND/OR nodes etc
 - Support for different bit container implementations
 - Skip-ahead functionality for performance optimization
 - Thread-safe operations
+- Stream based processing model
 
 ## Getting Started
 
@@ -40,18 +41,17 @@ mvn clean install
 
 ```java
 // Create bit containers
-BitContainer container1 = new SimpleReadableBitContainer();
-BitContainer container2 = new SimpleReadableBitContainer();
+BitContainer container1 = new SimpleReadableBitContainer(...);
+BitContainer container2 = new SimpleReadableBitContainer(...);
 
-// Create streams
-BitContainerStream stream1 = new BitContainerStream(container1);
-BitContainerStream stream2 = new BitContainerStream(container2);
-
-// Create a combined OR stream
-StreamNode orNode = new OrStreamNode(new StreamNode[]{stream1, stream2});
+// Create a combined OR stream, or some combination of the streams
+var query = new OrStreamNode(
+    container1.biterator(),
+    container2.biterator()
+);
 
 // Process the stream
-long nextBit = orNode.next();
+query.stream().forEach(...)
 ```
 
 ## Module Details

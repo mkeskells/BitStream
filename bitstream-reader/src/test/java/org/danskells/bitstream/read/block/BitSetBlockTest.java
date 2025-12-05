@@ -4,21 +4,28 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.danskells.bitstream.read.BitContainerStream.END_OF_STREAM;
-
+import static org.junit.jupiter.api.Assertions.*;
 
 public class BitSetBlockTest {
 
-  public static BitSet buildBitset(int... bits) {
+  public static TestBits buildTestBits(int... bits) {
+    int start = bits[0];
+    int controlOffset = bits[bits.length -1] - start +1;
     var bitset = new BitSet();
-    for (int bit : bits) {
-      bitset.set(bit);
+    for (var index = 1; index < bits.length; index ++) {
+      bitset.set(bits[index] - start);
     }
-    return bitset;
+    var bytes = bitset.toByteArray();
+    var list = new ArrayList<Long>();
+    for (long v : bits) {
+      list.add(v);
+    }
+    return new TestBits(new HeapBitmapBlock(start, controlOffset, bits[bits.length - 1] - start, bytes), list);
   }
 
 
@@ -26,32 +33,38 @@ public class BitSetBlockTest {
     return Stream.of(
         Arguments.of(
             "Single",
-            buildBitset(0)
+            buildTestBits(0)
         ),
         Arguments.of(
             "Packed",
-            buildBitset(0, 1, 2, 3, 4, 5)
+            buildTestBits(0, 1, 2, 3, 4, 5)
         ),
         Arguments.of(
             "Sparse",
-            buildBitset(0, 2, 4, 6, 8)
+            buildTestBits(0, 2, 4, 6, 8)
         ),
         Arguments.of(
             "Non-zero start",
-            buildBitset(2, 3, 4)
+            buildTestBits(2, 3, 4)
         )
     );
   }
+  record TestBits(BitmapBlock block, List<Long> values){}
 
   @ParameterizedTest
   @MethodSource("arrayArguments")
-  public void createAndIterateLongArrayBlock(String description, BitSet bitset) {
-    var bitmapBlock = new BitmapBlock(bitset);
-    var node = bitmapBlock.getStreamNode();
-    for (int bit : bitset.stream().toArray()) {
-      assertEquals(bit, node.next());
+  public void iterateBitsetBlock(String description, TestBits data) {
+    var bitmapBlock = data.block;
+
+    var bits = bitmapBlock.bits(bitmapBlock.initialOffset());
+
+    var actual  = new ArrayList<Long>();
+    for (var i = 0; i < data.values.size(); i++) {
+      assertTrue(bits.tryIndexedAdvance( (value, index) ->
+          actual.add(value), i), "end at "+i);
     }
-    assertEquals(END_OF_STREAM, node.next());
+    assertEquals(data.values, actual, "values match for "+description);
+    assertFalse(bits.tryIndexedAdvance((a,b) -> fail(a+", "+b), -1), "no more values");
   }
 
 }
