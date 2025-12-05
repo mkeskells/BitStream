@@ -1,5 +1,6 @@
 package org.danskells.bitstream.read;
 
+//probably replace this with extending Spliterator.ofLong?
 public interface StreamNode {
   /**
    *

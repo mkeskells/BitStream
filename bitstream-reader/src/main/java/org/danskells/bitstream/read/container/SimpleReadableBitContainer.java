@@ -1,11 +1,10 @@
 package org.danskells.bitstream.read.container;
 
-import org.danskells.bitstream.read.BitContainerStream;
-import org.danskells.bitstream.read.Block;
-import org.danskells.bitstream.read.BitContainer;
-import org.danskells.bitstream.read.StreamNode;
+import org.danskells.bitstream.read.*;
+import org.danskells.bitstream.read.biterator.Biterator;
 
 import java.util.Arrays;
+import java.util.function.LongConsumer;
 
 public class SimpleReadableBitContainer implements BitContainer {
 
@@ -20,30 +19,33 @@ public class SimpleReadableBitContainer implements BitContainer {
   }
 
   @Override
-  public StreamNode getStreamNode(long startInclusive, long endExclusive) {
-    return new BlockContainerStreamNode();
+  public Biterator biterator() {
+    return new BlockContainerBiterator();
   }
 
-  private class BlockContainerStreamNode implements StreamNode {
+  private class BlockContainerBiterator implements Biterator {
 
     int currentBlock = 0;
     StreamNode currentStreamNode = blocks[currentBlock].getStreamNode();
     long currentOffset = offsets[currentBlock];
 
+
     @Override
-    public long next() {
+    public boolean tryAdvance(LongConsumer action) {
       var positionInStreamNode = currentStreamNode.next();
       if (positionInStreamNode == BitContainerStream.END_OF_STREAM) {
-        if (currentBlock + 1 == blocks.length) return BitContainerStream.END_OF_STREAM;
+        if (currentBlock + 1 == blocks.length) return false;
         currentStreamNode = blocks[++currentBlock].getStreamNode();
         positionInStreamNode = currentStreamNode.next();
         currentOffset = offsets[currentBlock];
       }
-      return currentOffset + positionInStreamNode;
+      action.accept(currentOffset + positionInStreamNode);
+      return true;
+
     }
 
     @Override
-    public long skipToNext(long start) {
+    public long advanceTo(long start) {
 
       // Case 1: in the same block
       long position = skipToRelativePosition(start);
@@ -83,7 +85,5 @@ public class SimpleReadableBitContainer implements BitContainer {
       currentStreamNode = blocks[blockPosition].getStreamNode();
       currentOffset = offsets[blockPosition];
     }
-
-
   }
 }
