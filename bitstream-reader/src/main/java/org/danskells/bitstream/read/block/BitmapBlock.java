@@ -5,6 +5,9 @@ import org.danskells.bitstream.read.biterator.Biterator;
 public abstract class BitmapBlock extends Block {
 
   private int numberOfBits;
+  protected int numberOfBits() {
+    return numberOfBits;
+  }
 
   protected void reset(long initialOffset, long controlOffset, int numberOfBits) {
     super.reset(initialOffset, controlOffset);

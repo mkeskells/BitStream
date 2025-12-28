@@ -27,7 +27,7 @@ public abstract class  BitContainerRegion {
     return endExclusive;
   }
 
-  abstract Biterator biterator();
+  public abstract Biterator biterator();
 
   abstract class BlockContainerBiterator extends Biterator {
 

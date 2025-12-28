@@ -25,7 +25,7 @@ public class BitSetBlockTest {
     for (long v : bits) {
       list.add(v);
     }
-    return new TestBits(new HeapBitmapBlock(start, controlOffset, bits[bits.length - 1] - start, bytes), list);
+    return new TestBits(new HeapBitmapBlock(start, controlOffset, bytes), list);
   }
 
 
@@ -60,8 +60,8 @@ public class BitSetBlockTest {
 
     var actual  = new ArrayList<Long>();
     for (var i = 0; i < data.values.size(); i++) {
-      assertTrue(bits.tryIndexedAdvance( (value, index) ->
-          actual.add(value), i), "end at "+i);
+      assertTrue(bits.tryIndexedAdvance( (val, index) ->
+          actual.add(val), i), "end at "+i);
     }
     assertEquals(data.values, actual, "values match for "+description);
     assertFalse(bits.tryIndexedAdvance((a,b) -> fail(a+", "+b), -1), "no more values");

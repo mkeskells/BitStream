@@ -1,8 +1,7 @@
 package org.danskells.bitstream.read.container.trace;
 
-import org.danskells.bitstream.read.BitContainerStream;
-import org.danskells.bitstream.read.Block;
-import org.danskells.bitstream.read.StreamNode;
+import org.danskells.bitstream.read.block.Block;
+import org.danskells.bitstream.read.block.Block.BlockBits;
 import org.danskells.bitstream.read.coder.IRead;
 
 import java.io.ByteArrayOutputStream;
@@ -59,7 +58,7 @@ abstract class AbstractFileReaderDocTest {
     var captureStream = new PrintStream(outputCapture);
     var reader = new DebugBufferReader(buffer, testData.intReader(), captureStream);
     reader.out().println("```txt");
-    var block = reader.readBlock();
+    var block = reader.readBlockBits();
     reader.out().println();
     reader.out().print("```");
 
@@ -67,7 +66,7 @@ abstract class AbstractFileReaderDocTest {
     return new BlockAndText(block, output);
   }
 
-  record BlockAndText(Block block, String expectedText) {
+  record BlockAndText<Block>(Block block, String expectedText) {
   }
 
   static void testOrGenerate(TestData testData, String output) throws IOException {
@@ -82,15 +81,14 @@ abstract class AbstractFileReaderDocTest {
     }
   }
 
-  String allBits(StreamNode stream) {
+  String allBits(BlockBits stream) {
     StringBuilder sb = new StringBuilder();
-    long nextBit;
-    while ((nextBit = stream.next()) != BitContainerStream.END_OF_STREAM) {
+    while (stream.tryIndexedAdvance((val,idx) -> {
       if (!sb.isEmpty()) {
         sb.append(",");
       }
-      sb.append(nextBit);
-    }
+      sb.append(val);
+    },0)) {};
     return sb.toString();
   }
 

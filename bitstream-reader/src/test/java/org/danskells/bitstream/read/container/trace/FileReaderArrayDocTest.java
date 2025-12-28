@@ -46,8 +46,8 @@ public class FileReaderArrayDocTest extends AbstractFileReaderDocTest {
     // Verify the bitmap contains the expected bits
     switch (blockAndText.block()) {
       case LongArrayBlock bitmapBlock -> {
-        var stream = bitmapBlock.getStreamNode();
-        assertEquals(testData.expectedBits, allBits(stream));
+        var bits = bitmapBlock.bits(0L);
+        assertEquals(testData.expectedBits, allBits(bits));
       }
       default -> fail("Expected a LongArrayBlock");
     }

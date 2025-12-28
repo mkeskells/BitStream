@@ -1,9 +1,9 @@
 package org.danskells.bitstream.read.container.trace;
 
 import org.danskells.bitstream.common.block.BlockType;
-import org.danskells.bitstream.read.Block;
+import org.danskells.bitstream.read.block.Block;
+import org.danskells.bitstream.read.block.Block.BlockBits;
 import org.danskells.bitstream.read.block.BitmapBlock;
-import org.danskells.bitstream.read.block.LongArrayBlock;
 import org.danskells.bitstream.read.coder.IRead;
 import org.danskells.bitstream.read.container.DefaultBufferReader;
 
@@ -23,31 +23,38 @@ public class DebugBufferReader extends DefaultBufferReader {
   }
 
   @Override
-  protected LongArrayBlock decodeListBlock(byte control, int size) {
+  protected BlockBits decodeListBlockBits(byte control, int size) {
     showControl( control, BlockType.LIST, size);
     intReaderTl.get().push(new LongArrayIntReaderTracer(buffer, out, intReader));
     try {
-      return super.decodeListBlock(control, size);
+      return super.decodeListBlockBits(control, size);
     } finally {
       intReaderTl.get().pop();
     }
   }
 
   @Override
-  protected Block decodeRleBlock(byte control, int blockSpecific) {
-    return super.decodeRleBlock(control, blockSpecific);
+  protected BlockBits decodeRleBlockBits(byte control, int blockSpecific) {
+    return super.decodeRleBlockBits(control, blockSpecific);
   }
 
   @Override
-  protected BitmapBlock decodeBitmapBlock(byte control, int blockSpecific) {
+  protected BlockBits decodeBitmapBlockBits(byte control, int blockSpecific) {
     showControl( control, BlockType.BITMAP, blockSpecific);
-    return super.decodeBitmapBlock(control, blockSpecific);
+    return super.decodeBitmapBlockBits(control, blockSpecific);
   }
 
   @Override
-  protected void addBitsToBitmap(byte currentByte, BitSet allBits, int index) {
-    showBitset(index, currentByte);
-    super.addBitsToBitmap(currentByte, allBits, index);
+  protected void addBitsToBitmap(int arraySize) {
+    var position  = buffer.position();
+    for (int index = 0; index <= arraySize; index++) {
+      buffer.position(position + index);
+      var currentByte = buffer.get();
+      showBitset(index, currentByte);
+    }
+    buffer.position(position);
+    super.addBitsToBitmap(arraySize);
+
   }
 
   protected void showControl(byte control, BlockType blockType, int blockSpecific) {

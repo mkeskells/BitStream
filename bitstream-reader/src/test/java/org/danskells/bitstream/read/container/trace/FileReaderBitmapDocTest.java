@@ -43,7 +43,7 @@ public class FileReaderBitmapDocTest extends AbstractFileReaderDocTest{
     // Verify the bitmap contains the expected bits
     switch (blockAndText.block()) {
       case BitmapBlock bitmapBlock -> {
-        var stream = bitmapBlock.getStreamNode();
+        var stream = bitmapBlock.bits(0);
         assertEquals(testData.expectedBits, allBits(stream));
       }
       default -> fail("Expected a BitmapBlock");

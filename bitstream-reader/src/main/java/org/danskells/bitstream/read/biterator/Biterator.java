@@ -30,7 +30,7 @@ public abstract class Biterator implements Spliterator.OfLong {
   public abstract boolean tryIndexedAdvance (IndexedLongConsumer action, int actionParameter);
 
   public boolean tryAdvance(LongConsumer action) {
-    return tryIndexedAdvance((value, index) -> action.accept(value), 0);
+    return tryIndexedAdvance((value_, index) -> action.accept(value_), 0);
   }
 
 
