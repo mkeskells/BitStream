@@ -1,4 +1,4 @@
-A BitStream can contain a series of blocks, in a container. Each container is at least conseptually a file.
+A BitStream can contain a series of blocks, in a container. Each container is at least conceptually a file.
 The format of a container and block can parsed into a java data structure, or be accessed in a native memory
 
 
@@ -84,63 +84,5 @@ a rle-block
 01   #   (vint 129) offest 129
 30   #   (vint 48) length 48        -> bit offsets 136 .. 184
 ```
-an array-block
-```txt
-42   #         -> control byte
-     #   010   -> block type = array-block
-     #   00010 -> block-length = 2 values
-                                    -> bit position 0 implied
-04   #   (vint 4) length of block in bytes
-07   #   (vint 7)                   -> bit position 8
-c4   #   (vint 3 bytes, lower 5 bits = 00100)
-47
-80   #   (vint 0x8047 << 5 + 4 = 0x1008E0 (or 1050848 in decimal) + 4 = 1050852
-                              -> bit position 1050852 + 8 + 1 = 1050861
-```
-     # 000            -> block type = Bitmap Block
-     # 00100          -> (block specific) bytes in bitmap: 5 (1 based)
-                      -> bit 0 is implied
-01   #  byte[0]       -> bits set: 1
-04   #  byte[1]       -> bits set: 11
-05   #  byte[2]       -> bits set: 17, 19
-FF   #  byte[3]       -> bits set: 25, 26, 27, 28, 29, 30, 31, 32
-```
 
-
-a bitmap
-```txt
-04   #                -> control byte
-     # 000            -> block type = Bitmap Block
-     # 00100          -> (block specific) bytes in bitmap: 5 (1 based)
-                      -> bit 0 is implied
-01   #  byte[0]       -> bits set: 1
-04   #  byte[1]       -> bits set: 11
-05   #  byte[2]       -> bits set: 17, 19
-FF   #  byte[3]       -> bits set: 25, 26, 27, 28, 29, 30, 31, 32
-```
-
-
-a rle-block
-```txt
-22   #         -> control byte
-     #   001   -> block type = rle-block
-     #   00010 -> block-length = 2 pairs
-04   #   (vint 4) length of block in bytes
-07   #   (vint 7) length            -> bit offsets 0 ..7
-80   #   (vint 2 bytes)
-01   #   (vint 129) offest 129
-30   #   (vint 48) length 48        -> bit offsets 136 .. 184
-```
-an array-block
-```txt
-42   #         -> control byte
-     #   010   -> block type = array-block
-     #   00010 -> block-length = 2 values
-                                    -> bit position 0 implied
-07   #   (vint 7)                   -> bit position 8
-c4   #   (vint 3 bytes, lower 5 bits = 00100)
-47
-80   #   (vint 0x8047 << 5 + 3 = 0x1008E0 (or 1051872 in decimal) + 3 = 1051875
-                                    -> bit position 1051883
-```
 
