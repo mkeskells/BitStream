@@ -47,9 +47,8 @@ public class DebugBufferReader extends DefaultBufferReader {
   @Override
   protected void addBitsToBitmap(int arraySize) {
     var position  = buffer.position();
-    for (int index = 0; index <= arraySize; index++) {
-      buffer.position(position + index);
-      var currentByte = buffer.get();
+    for (int index = 0; index < arraySize; index++) {
+      var currentByte = buffer.get(position + index);
       showBitset(index, currentByte);
     }
     buffer.position(position);

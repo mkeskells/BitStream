@@ -17,7 +17,7 @@ public class HeapBitmapBlock extends BitmapBlock{
       this.buffer = buffer;
       this.position = position;
       this.numberOfBytes = numberOfBytes;
-      reset(initialOffset, controlOffset, numberOfBytes << 3 + 1);
+      reset(initialOffset, controlOffset,numberOfBytes << 3);
   }
 
   @Override

@@ -67,9 +67,13 @@ abstract class IReadWriteTest {
     return readULongDataExtra.stream().map(t -> Arguments.of(t._1, t._2));
   }
 
+  //until junit 6 supported by intellij
+  protected static Stream<Arguments> readULongDataCombined() {
+    return Stream.concat(readULongData(), readULongDataExtra());
+  }
+
   @ParameterizedTest
-  @MethodSource("readULongData")
-  @MethodSource("readULongDataExtra")
+  @MethodSource("readULongDataCombined")
   void readULong(long value, int size) {
     write.writeUnsigned(underTest, value);
     if (size >= 0) {
@@ -103,9 +107,12 @@ abstract class IReadWriteTest {
     return readUIntDataExtra.stream().map(t -> Arguments.of(t._1, t._2));
   }
 
+  protected static Stream<Arguments> readUIntDataCombined() {
+    return Stream.concat(readUIntData(), readUIntDataExtra());
+  }
+
   @ParameterizedTest
-  @MethodSource("readUIntData")
-  @MethodSource("readUIntDataExtra")
+  @MethodSource("readUIntDataCombined")
   void readUInt(int value, int size) {
     write.writeUnsigned(underTest, value);
     if (size >= 0) {
@@ -137,9 +144,12 @@ abstract class IReadWriteTest {
     return readUShortDataExtra.stream().map(t -> Arguments.of((short)(char)t._1, t._2));
   }
 
+  protected static Stream<Arguments> readUShortDataCombined() {
+    return Stream.concat(readUShortData(), readUShortDataExtra());
+  }
+
   @ParameterizedTest
-  @MethodSource("readUShortData")
-  @MethodSource("readUShortDataExtra")
+  @MethodSource("readUShortDataCombined")
   void readUShort(short value, int size) {
     write.writeUnsigned(underTest, (char)value);
     if (size >= 0) {

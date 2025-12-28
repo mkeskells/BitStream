@@ -24,7 +24,7 @@ public class FileReaderBitmapDocTest extends AbstractFileReaderDocTest{
     return Stream.of(
         Arguments.of(new BitmapTestData("Simple example", new byte[]{
                 0x00,                      // offset = 0 (vint)
-                0x04,                      // control byte: bitmap block, 4 bytes
+                0x03,                      // control byte: bitmap bits, 4 bytes
                 0x01,                      // bitmap data: bits 0, 1
                 0x04,                      // bitmap data: bit 11
                 0x05,                      // bitmap data: bits 17, 19
@@ -41,12 +41,11 @@ public class FileReaderBitmapDocTest extends AbstractFileReaderDocTest{
     var blockAndText = prepareBlockAndText(testData);
 
     // Verify the bitmap contains the expected bits
-    switch (blockAndText.block()) {
-      case BitmapBlock bitmapBlock -> {
-        var stream = bitmapBlock.bits(0);
-        assertEquals(testData.expectedBits, allBits(stream));
+    switch (blockAndText.bits()) {
+      case BitmapBlock.BitmapBlockBits bits -> {
+        assertEquals(testData.expectedBits, allBits(bits));
       }
-      default -> fail("Expected a BitmapBlock");
+      default -> fail("Expected a BitmapBlock, got " + blockAndText.bits().getClass().getSimpleName());
     }
 
     testOrGenerate(testData, blockAndText.expectedText());

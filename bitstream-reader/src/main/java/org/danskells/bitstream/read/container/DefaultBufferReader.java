@@ -40,12 +40,10 @@ public class DefaultBufferReader {
   protected BlockBits decodeListBlockBits(byte control, int size) {
     var blockLength = readUInt(buffer);
     var pos = buffer.position();
-    var longs = new long[size + 1];
-    longs[0] = currentBlockBitAddress;
+    var longs = new long[size];
     for (int i = 1; i <= size; i++) {
       var delta = readULong(buffer) + 1;
-      currentBlockBitAddress += delta;
-      longs[i] = currentBlockBitAddress;
+      longs[i-1] = delta;
     }
     assert buffer.position() - pos == blockLength : "Read length does not match block length";
     return new HeapLongArrayBlock(0L, longs).bits(0L);

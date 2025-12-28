@@ -1,6 +1,5 @@
 package org.danskells.bitstream.read.container.trace;
 
-import org.danskells.bitstream.read.block.Block;
 import org.danskells.bitstream.read.block.Block.BlockBits;
 import org.danskells.bitstream.read.coder.IRead;
 
@@ -11,7 +10,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,22 +49,22 @@ abstract class AbstractFileReaderDocTest {
     }
   }
 
-  BlockAndText prepareBlockAndText(TestData testData) {
+  BitsAndText<?> prepareBlockAndText(TestData testData) {
     var buffer = ByteBuffer.wrap(testData.data());
     buffer.order(ByteOrder.LITTLE_ENDIAN);
     var outputCapture = new ByteArrayOutputStream();
     var captureStream = new PrintStream(outputCapture);
     var reader = new DebugBufferReader(buffer, testData.intReader(), captureStream);
     reader.out().println("```txt");
-    var block = reader.readBlockBits();
+    var blockBits = reader.readBlockBits();
     reader.out().println();
     reader.out().print("```");
 
     var output = outputCapture.toString().replace("\r\n", "\n");
-    return new BlockAndText(block, output);
+    return new BitsAndText<>(blockBits, output);
   }
 
-  record BlockAndText<Block>(Block block, String expectedText) {
+  record BitsAndText<B extends BlockBits>(B bits, String expectedText) {
   }
 
   static void testOrGenerate(TestData testData, String output) throws IOException {

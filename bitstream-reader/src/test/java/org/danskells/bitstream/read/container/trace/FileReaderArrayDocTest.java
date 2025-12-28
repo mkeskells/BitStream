@@ -26,12 +26,12 @@ public class FileReaderArrayDocTest extends AbstractFileReaderDocTest {
     return Stream.of(
         Arguments.of(new ArrayTestData("Simple example", new byte[]{
                 0x00,                      // offset = 0 (vint)
-                0x42,                      // control byte: array block, 2 values
-                0x04,                      //   (vint 4) length of block in bytes
+                0x42,                      // control byte: array bits, 2 values
+                0x04,                      //   (vint 4) length of bits in bytes
                 0x07,                      //   (vint 7)                   -> bit position 8
-                (byte) 0xc4,                      //   (vint 3 bytes, lower 5 bits = 00100)
+                (byte) 0xc4,               //   (vint 3 bytes, lower 5 bits = 00100)
                 0x47,                      //
-                (byte) 0x80,                      //   (vint 0x8047 << 5 + 4 = 0x1008E0 (or 1051872 in decimal) + 3 = 1051875
+                (byte) 0x80,               //   (vint 0x8047 << 5 + 4 = 0x1008E0 (or 1051872 in decimal) + 3 = 1051875
                 //          -> bit position 1051883
             }, "ex-01.md", "0,8,1050861", MsbReader.INSTANCE)
 
@@ -44,12 +44,10 @@ public class FileReaderArrayDocTest extends AbstractFileReaderDocTest {
     var blockAndText = prepareBlockAndText(testData);
 
     // Verify the bitmap contains the expected bits
-    switch (blockAndText.block()) {
-      case LongArrayBlock bitmapBlock -> {
-        var bits = bitmapBlock.bits(0L);
+    switch (blockAndText.bits()) {
+      case LongArrayBlock.LongArrayBlockBits bits ->
         assertEquals(testData.expectedBits, allBits(bits));
-      }
-      default -> fail("Expected a LongArrayBlock");
+      default -> fail("Expected a LongArrayBlock: got " + blockAndText.bits().getClass().getSimpleName());
     }
 
     testOrGenerate(testData, blockAndText.expectedText());

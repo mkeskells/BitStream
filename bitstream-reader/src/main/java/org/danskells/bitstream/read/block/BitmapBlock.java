@@ -14,7 +14,7 @@ public abstract class BitmapBlock extends Block {
     this.numberOfBits = numberOfBits;
   }
 
-  protected  class BitmapBlockBits extends BlockBits {
+  public class BitmapBlockBits extends BlockBits {
 
     @Override
     public boolean trySkipTo(long position, Biterator.IndexedLongConsumer action, int actionParameter) {
@@ -47,8 +47,7 @@ public abstract class BitmapBlock extends Block {
       //make findNextRelative lazy, called before accept. that way we dont do extra work unnecessarily
       //on subsequent calls, we just use nextRelativePosition
       if (nextRelativePosition >= 0) {
-        //TODO offset by 1, as we dont need the first bit
-        action.accept(baseOffset + nextRelativePosition, actionParameter);
+        action.accept(baseOffset + nextRelativePosition + 1, actionParameter);
         nextRelativePosition = findNextRelative(nextRelativePosition+1);
       } else {
         action.accept(baseOffset, actionParameter);

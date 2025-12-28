@@ -18,7 +18,7 @@ public class BitSetBlockTest {
     int controlOffset = bits[bits.length -1] - start +1;
     var bitset = new BitSet();
     for (var index = 1; index < bits.length; index ++) {
-      bitset.set(bits[index] - start);
+      bitset.set(bits[index] - start -1);
     }
     var bytes = bitset.toByteArray();
     var list = new ArrayList<Long>();

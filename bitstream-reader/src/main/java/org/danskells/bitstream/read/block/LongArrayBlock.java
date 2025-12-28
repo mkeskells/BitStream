@@ -12,7 +12,7 @@ public abstract class LongArrayBlock extends Block {
   }
 
 
-  abstract class LongArrayBlockBits extends BlockBits {
+  public abstract class LongArrayBlockBits extends BlockBits {
     /**
      * the number of results remaining to be returned
      */
