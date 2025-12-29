@@ -7,10 +7,10 @@ import java.util.stream.StreamSupport;
 
 public interface BitContainer {
 
-  Biterator biterator();
+    Biterator biterator();
 
-  default LongStream stream() {
-    return StreamSupport.longStream(biterator(), false);
-  }
+    default LongStream stream() {
+        return StreamSupport.longStream(biterator(), false);
+    }
 }
 

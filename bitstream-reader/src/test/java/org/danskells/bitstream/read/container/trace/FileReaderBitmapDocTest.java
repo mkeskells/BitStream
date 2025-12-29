@@ -13,42 +13,44 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class FileReaderBitmapDocTest extends AbstractFileReaderDocTest{
-  record BitmapTestData(String name, byte[] data, String mdDocFileName, String expectedBits, IRead intReader) implements TestData{
-    @Override
-    public String mdDir() {
-      return "bitmap";
-    }
-  }
-  public static Stream<Arguments> bitmapTestsData() {
-    return Stream.of(
-        Arguments.of(new BitmapTestData("Simple example", new byte[]{
-                0x00,                      // offset = 0 (vint)
-                0x03,                      // control byte: bitmap bits, 4 bytes
-                0x01,                      // bitmap data: bits 0, 1
-                0x04,                      // bitmap data: bit 11
-                0x05,                      // bitmap data: bits 17, 19
-                (byte) 0xff                // bitmap data: bits 25-32))
-            }, "ex-01.md", "0,1,11,17,19,25,26,27,28,29,30,31,32", MsbReader.INSTANCE)
-
-        ));
-  }
-
-  @ParameterizedTest
-  @MethodSource("bitmapTestsData")
-  void testBitmapBlockReadAndOutput(BitmapTestData testData) throws IOException {
-
-    var blockAndText = prepareBlockAndText(testData);
-
-    // Verify the bitmap contains the expected bits
-    switch (blockAndText.bits()) {
-      case BitmapBlock.BitmapBlockBits bits -> {
-        assertEquals(testData.expectedBits, allBits(bits));
-      }
-      default -> fail("Expected a BitmapBlock, got " + blockAndText.bits().getClass().getSimpleName());
+public class FileReaderBitmapDocTest extends AbstractFileReaderDocTest {
+    record BitmapTestData(String name, byte[] data, String mdDocFileName, String expectedBits,
+                          IRead intReader) implements TestData {
+        @Override
+        public String mdDir() {
+            return "bitmap";
+        }
     }
 
-    testOrGenerate(testData, blockAndText.expectedText());
-  }
+    public static Stream<Arguments> bitmapTestsData() {
+        return Stream.of(
+                Arguments.of(new BitmapTestData("Simple example", new byte[]{
+                                0x00,                      // offset = 0 (vint)
+                                0x03,                      // control byte: bitmap bits, 4 bytes
+                                0x01,                      // bitmap data: bits 0, 1
+                                0x04,                      // bitmap data: bit 11
+                                0x05,                      // bitmap data: bits 17, 19
+                                (byte) 0xff                // bitmap data: bits 25-32))
+                        }, "ex-01.md", "0,1,11,17,19,25,26,27,28,29,30,31,32", MsbReader.INSTANCE)
+
+                ));
+    }
+
+    @ParameterizedTest
+    @MethodSource("bitmapTestsData")
+    void testBitmapBlockReadAndOutput(BitmapTestData testData) throws IOException {
+
+        var blockAndText = prepareBlockAndText(testData);
+
+        // Verify the bitmap contains the expected bits
+        switch (blockAndText.bits()) {
+            case BitmapBlock.BitmapBlockBits bits -> {
+                assertEquals(testData.expectedBits, allBits(bits));
+            }
+            default -> fail("Expected a BitmapBlock, got " + blockAndText.bits().getClass().getSimpleName());
+        }
+
+        testOrGenerate(testData, blockAndText.expectedText());
+    }
 
 }

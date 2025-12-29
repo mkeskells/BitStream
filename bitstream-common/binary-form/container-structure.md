@@ -1,8 +1,8 @@
 A BitStream can contain a series of blocks, in a container. Each container is at least conceptually a file.
 The format of a container and block can parsed into a java data structure, or be accessed in a native memory
 
-
 # Container Structure
+
 the container contains a header, with metadata and index, and then blocks.
 
 ```
@@ -18,13 +18,15 @@ the container contains a header, with metadata and index, and then blocks.
 | Block N          |
 +------------------+
 ```
+
 The container header will contain some index, probably a skip list, but not defined yet
 
-
 Each block contains a packed type and type data, followed by the binary data
-For each block the first bit is implied. I.e. each block is positioned at a set bit, and that set bit is not in the data stored
+For each block the first bit is implied. I.e. each block is positioned at a set bit, and that set bit is not in the data
+stored
 
 in ebnf
+
 ```
 block-header        :== bit-offset block-specific-data
 bit-offset          :== vint # the relative offset from the preceeding block control point
@@ -54,26 +56,29 @@ list-item           :== vint
 #the control point is the start of the block (so as to avoid having to parse all of the values)
 ```
 
-ids - bitmap-block  -> 0
-      rle-block     -> 1
-      list-block    -> 2
+ids - bitmap-block -> 0
+rle-block -> 1
+list-block -> 2
 others are reserved for future use.
 probably small versions of the above
 e.g. to consider
-single value arrays - i.e. list-block with one value, 2 values with block specific 
+single value arrays - i.e. list-block with one value, 2 values with block specific
 single rle block (i.e. rle-block with one pair length in block specific)
 
 ## Examples
+
 ### Bitmaps
+
 [simple bitmap](examples/bitmap/ex-01.md)
 
 ### RLE Blocks
 
 ### List Blocks
+
 [simple list](examples/array/ex-01.md)
 
-
 a rle-block
+
 ```txt
 22   #         -> control byte
      #   001   -> block type = rle-block

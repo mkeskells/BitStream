@@ -1,6 +1,7 @@
 # BitStream
 
-A Java library for efficient bit stream operations and manipulations. This library provides a set of tools for working with streams of bits, 
+A Java library for efficient bit stream operations and manipulations. This library provides a set of tools for working
+with streams of bits,
 with support for various logical operations like AND and OR operations between multiple streams.
 
 ## Project Structure
@@ -9,11 +10,11 @@ The project is organized into multiple Maven modules:
 
 - **bitstream-core**: Core structures
 - **bitstream-writer**:
-  - Implementation of a writer for bit streams
-- **bitstream-reader**: 
-  - immutable data, thread safe
-  - Reader implementations for bit streams, to read and manage the structure
-  - Stream nodes for logical operations (AND, OR), to provide a query like reader interface
+    - Implementation of a writer for bit streams
+- **bitstream-reader**:
+    - immutable data, thread safe
+    - Reader implementations for bit streams, to read and manage the structure
+    - Stream nodes for logical operations (AND, OR), to provide a query like reader interface
 
 ## Features
 
@@ -57,6 +58,7 @@ query.stream().forEach(...)
 ## Module Details
 
 ### bitstream-core
+
 Contains common structure and definitions
 
 ### bitstream-reader

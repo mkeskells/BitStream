@@ -19,6 +19,7 @@ public class BitContainerWriter {
         this.intWriter = intWriter;
         this.buffer = allocator.allocate(size);
     }
+
     public void writeBitmap(long blockOffset, BitSet bitset, int firstBit, int lastBit) {
         if (blockOffset < currentOffset) {
             throw new IllegalArgumentException("backwards");
@@ -43,15 +44,15 @@ public class BitContainerWriter {
 
         ensureCapacity(sizeNeeded);
         intWriter.writeUnsigned(buffer, delta);
-        putControl(BlockType.BITMAP, byteCount -1);
+        putControl(BlockType.BITMAP, byteCount - 1);
 
         var bytes = new byte[byteCount];
-        for (int sourceBit = bitset.nextSetBit(firstBit + 1); sourceBit <= lastBit && sourceBit > 0; sourceBit = bitset.nextSetBit(sourceBit+1)) {
-            var targetBit = sourceBit - firstBit -1;
-            bytes[targetBit >>3] |= (byte) (1 << (targetBit & 7));
+        for (int sourceBit = bitset.nextSetBit(firstBit + 1); sourceBit <= lastBit && sourceBit > 0; sourceBit = bitset.nextSetBit(sourceBit + 1)) {
+            var targetBit = sourceBit - firstBit - 1;
+            bytes[targetBit >> 3] |= (byte) (1 << (targetBit & 7));
         }
         buffer.put(bytes);
-        assert prevPosition + sizeNeeded == buffer.position(): "expected to use allocated space";
+        assert prevPosition + sizeNeeded == buffer.position() : "expected to use allocated space";
 
     }
 
@@ -66,7 +67,7 @@ public class BitContainerWriter {
     }
 
     private void putControl(BlockType blockType, int blockSpecific) {
-        assert blockSpecific < 32 && blockSpecific >=0;
+        assert blockSpecific < 32 && blockSpecific >= 0;
         buffer.put((byte) ((blockType.ordinal() << ControlByte.BLOCK_TYPE_SHIFT) + blockSpecific));
     }
 

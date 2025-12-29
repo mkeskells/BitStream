@@ -21,5 +21,6 @@ public enum ByteBufferAllocator {
         }
 
     };
+
     abstract ByteBuffer allocate(int capacity);
 }
