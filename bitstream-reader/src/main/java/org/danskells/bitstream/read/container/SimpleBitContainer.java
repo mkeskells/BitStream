@@ -4,7 +4,6 @@ import org.danskells.bitstream.read.BitContainer;
 import org.danskells.bitstream.read.biterator.Biterator;
 import org.danskells.bitstream.read.biterator.ParentBiterator;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Supplier;
 

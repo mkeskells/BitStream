@@ -17,7 +17,7 @@ public abstract class Biterator implements Spliterator.OfLong {
    */
   public abstract boolean trySkipTo(long position, IndexedLongConsumer action, int actionParameter);
   public boolean trySkipTo(long position) {
-    return trySkipTo(position, (value, index) -> {}, 0);
+    return trySkipTo(position, (v, index) -> {}, 0);
   }
 //
 //  /**

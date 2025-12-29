@@ -2,23 +2,37 @@ package org.danskells.bitstream.read.container;
 
 import org.danskells.bitstream.read.biterator.Biterator;
 import org.danskells.bitstream.read.block.Block;
+import org.danskells.bitstream.read.coder.MsbReader;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  * A region within a BitContainer.
  * Conceptually maps to a file or a region of files
  * 
- * A region contains blocks of bits that can be read, and typically some indexing.
+ * A region contains blocks of bits that can be read, and some indexing.
  * A region has a start and end address within the BitContainer.
  * 
  */
-public abstract class  BitContainerRegion {
-  protected final long startInclusive;
-  protected final long endExclusive;
+public class BitContainerRegion {
+  private final long startInclusive;
+  private final long endExclusive;
+  private final ByteBuffer buffer;
 
-  public BitContainerRegion(long startInclusive, long endExclusive) {
+  public BitContainerRegion(long startInclusive, long endExclusive, ByteBuffer buffer) {
     this.startInclusive = startInclusive;
     this.endExclusive = endExclusive;
+    this.buffer = buffer;
   }
+
+  public Biterator biterator() {
+    var readOnly = buffer.asReadOnlyBuffer();
+    //asReadOnly does not preserve byte order
+    readOnly.order(ByteOrder.LITTLE_ENDIAN);
+    return new ByteBufferBiterator(startInclusive, endExclusive, readOnly);
+  }
+
   long getStartInclusive() {
     return startInclusive;
   }
@@ -27,39 +41,4 @@ public abstract class  BitContainerRegion {
     return endExclusive;
   }
 
-  public abstract Biterator biterator();
-
-  abstract class BlockContainerBiterator extends Biterator {
-
-    private long currentOffset = startInclusive;
-    private Block.BlockBits current;
-
-    abstract Block.BlockBits nextBlockOrNull(long currentOffset);
-
-    @Override
-    public boolean trySkipTo(long position, IndexedLongConsumer action, int actionParameter) {
-      while (current != null && !current.trySkipTo(position, action, actionParameter)) {
-        currentOffset += current.controlOffset();
-        current = nextBlockOrNull(currentOffset);
-        if (current == null) {
-          return false;
-        }
-        currentOffset +=current.initialOffset();
-      }
-      return current != null;
-    }
-
-    @Override
-    public boolean tryIndexedAdvance(IndexedLongConsumer action, int actionParameter) {
-      if (current != null && !current.tryIndexedAdvance(action, actionParameter)) {
-        currentOffset += current.controlOffset();
-        current = nextBlockOrNull(currentOffset);
-        if (current == null) {
-          return false;
-        }
-        currentOffset +=current.initialOffset();
-      }
-      return current != null;
-    }
-  }
 }
