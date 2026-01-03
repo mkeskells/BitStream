@@ -1,4 +1,4 @@
-package org.danskells.bitstream.read.container.trace;
+package org.danskells.bitstream.read.region.trace;
 
 import org.danskells.bitstream.read.block.BitmapBlock;
 import org.danskells.bitstream.read.coder.IRead;

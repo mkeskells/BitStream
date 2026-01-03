@@ -1,15 +1,15 @@
-package org.danskells.bitstream.read.container.trace;
+package org.danskells.bitstream.read.region.trace;
 
 import org.danskells.bitstream.common.block.BlockType;
 import org.danskells.bitstream.read.block.Block.BlockBits;
 import org.danskells.bitstream.read.coder.IRead;
-import org.danskells.bitstream.read.container.DefaultBufferReader;
+import org.danskells.bitstream.read.region.BufferReader;
 
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.util.Stack;
 
-public class DebugBufferReader extends DefaultBufferReader {
+public class DebugBufferReader extends BufferReader {
 
     private PrintStream out;
     private final ThreadLocal<Stack<IntTracer>> intReaderTl = ThreadLocal.withInitial(Stack::new);

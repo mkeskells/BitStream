@@ -1,6 +1,6 @@
 package org.danskells.bitstream.test.container;
 
-import org.danskells.bitstream.read.container.BitContainerRegion;
+import org.danskells.bitstream.read.region.BitRegion;
 import org.danskells.bitstream.write.coder.MsbWriter;
 import org.danskells.bitstream.write.container.BitContainerWriter;
 import org.danskells.bitstream.write.container.ByteBufferAllocator;
@@ -29,14 +29,14 @@ public class RoundTripTest {
 
         ByteBuffer written = writer.asReadOnlyBuffer();
 
-        var reader = new BitContainerRegion(0, Long.MAX_VALUE, written);
+        var reader = new BitRegion(0, Long.MAX_VALUE, written);
 
         var allBits = readFully(reader);
         assertEquals(List.of(0L, 2L, 4L, 5L, 6L, 7L, 9L, 22L, 80L), allBits);
 
     }
 
-    List<Long> readFully(BitContainerRegion region) {
+    List<Long> readFully(BitRegion region) {
         var stream = region.biterator();
         return stream.stream().boxed().toList();
     }

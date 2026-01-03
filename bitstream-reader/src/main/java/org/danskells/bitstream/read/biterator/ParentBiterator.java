@@ -1,5 +1,7 @@
 package org.danskells.bitstream.read.biterator;
 
+import org.danskells.bitstream.read.Biterator;
+
 import java.util.Iterator;
 import java.util.function.Supplier;
 

@@ -1,4 +1,4 @@
-package org.danskells.bitstream.read.biterator;
+package org.danskells.bitstream.read;
 
 import java.util.Comparator;
 import java.util.Spliterator;
@@ -22,13 +22,6 @@ public abstract class Biterator implements Spliterator.OfLong {
         return trySkipTo(position, (v, index) -> {
         }, 0);
     }
-//
-//  /**
-//   * apply the next value without consuming it.
-//   * @param action
-//   * @return true if a value was produced, false if the end of the stream was reached
-//   */
-//  boolean tryPeek(IndexedLongConsumer action, int index);
 
     public abstract boolean tryIndexedAdvance(IndexedLongConsumer action, int actionParameter);
 

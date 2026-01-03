@@ -1,9 +1,16 @@
 package org.danskells.bitstream.read.block;
 
+import org.danskells.bitstream.read.BitContainer;
+import org.danskells.bitstream.read.region.BitRegion;
+import org.danskells.bitstream.read.region.SimpleBitContainer;
+import org.danskells.bitstream.write.coder.MsbWriter;
+import org.danskells.bitstream.write.container.BitContainerWriter;
+import org.danskells.bitstream.write.container.ByteBufferAllocator;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -17,7 +24,7 @@ class HeapLongArrayBlockTest {
         return Stream.of(
                 Arguments.of(
                         "Single",
-                        TestBlock.fromArray(0L)
+                        TestBlock.fromArray(0L, 99L)
                 ),
                 Arguments.of(
                         "Packed",
@@ -34,7 +41,7 @@ class HeapLongArrayBlockTest {
         );
     }
 
-    record TestBlock(HeapLongArrayBlock block, List<Long> values) {
+    record TestBlock(HeapLongArrayBlock block, ByteBuffer buffer, List<Long> values) {
         public static TestBlock fromArray(long... array) {
             var data = new long[array.length - 1];
             for (int i = 1; i < array.length; i++) {
@@ -44,7 +51,12 @@ class HeapLongArrayBlockTest {
             for (long v : array) {
                 list.add(v);
             }
-            return new TestBlock(new HeapLongArrayBlock(array[0], data), list);
+
+            var writer = new BitContainerWriter(1024, ByteBufferAllocator.HEAP, MsbWriter.INSTANCE);
+            writer.writeArray(array[0], array, 1, array.length );
+
+            ByteBuffer buffer = writer.asReadOnlyBuffer();
+            return new TestBlock(new HeapLongArrayBlock(array[0], data), buffer, list);
         }
     }
 
@@ -56,11 +68,27 @@ class HeapLongArrayBlockTest {
 
         var actual = new ArrayList<Long>();
         for (var i = 0; i < testData.values.size(); i++) {
-            assertTrue(bits.tryIndexedAdvance(((value, index) -> actual.add(value)), i), "end at " + i);
+            assertTrue(bits.tryIndexedAdvance(((v, index) -> actual.add(v)), i), "end at " + i);
         }
         assertFalse(bits.tryIndexedAdvance((a, b) -> {
         }, -1), "no more values");
         assertEquals(testData.values, actual, "values match for " + description);
     }
+
+
+    @ParameterizedTest
+    @MethodSource("arrayArguments")
+    public void createAndIterateArrayBlock(String description, TestBlock testData) {
+        var region = new BitRegion(0, Long.MAX_VALUE, testData.buffer);
+        var container = new SimpleBitContainer(List.of(region));
+        var allBits = readFully(container);
+        assertEquals(testData.values, allBits);
+    }
+
+    List<Long> readFully(BitContainer container) {
+        var stream = container.setBits();
+        return stream.stream().boxed().toList();
+    }
+
 
 }

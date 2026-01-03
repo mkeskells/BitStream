@@ -53,8 +53,43 @@ public class BitContainerWriter {
         }
         buffer.put(bytes);
         assert prevPosition + sizeNeeded == buffer.position() : "expected to use allocated space";
+    }
+
+    public void writeArray(long blockOffset, long[] arrayValues, int firstIndexInclusive, int lastIndexExclusive) {
+        if (firstIndexInclusive >=lastIndexExclusive) {
+            throw new IllegalArgumentException("array must not be empty");
+        }
+        if (lastIndexExclusive - firstIndexInclusive < 1) {
+            throw new IllegalArgumentException("too small array");
+        }
+        if (lastIndexExclusive - firstIndexInclusive >32) {
+            throw new IllegalArgumentException("too large array");
+        }
+        var sizeNeeded = 1; //control byte
+        long delta = blockOffset - currentOffset -1; //one based
+        sizeNeeded += intWriter.sizeOf(delta); //offset
+        var sizeBeforeDeltas = sizeNeeded;
+        for (int i = firstIndexInclusive; i < lastIndexExclusive; i++ ) {
+            if (arrayValues[i] <= arrayValues[i-1]) {
+                throw new IllegalArgumentException("array must be strictly increasing");
+            }
+            sizeNeeded += intWriter.sizeOf(arrayValues[i] - arrayValues[i-1] - 1);
+        }
+        var arrayEncodedSize = sizeNeeded - sizeBeforeDeltas;
+        sizeNeeded += intWriter.sizeOf(sizeNeeded - sizeBeforeDeltas); //block vars size
+        ensureCapacity(sizeNeeded);
+
+        intWriter.writeUnsigned(buffer, delta);
+        putControl(BlockType.LIST, lastIndexExclusive - firstIndexInclusive -1);
+        intWriter.writeUnsigned(buffer, arrayEncodedSize);
+        intWriter.writeUnsigned(buffer, arrayValues[firstIndexInclusive] - blockOffset - 1);
+        for (int i = firstIndexInclusive + 1; i < lastIndexExclusive; i++ ) {
+            intWriter.writeUnsigned(buffer, arrayValues[i] - arrayValues[i-1] - 1);
+        }
+
 
     }
+
 
     private void ensureCapacity(int extraNeeded) {
         if (buffer.remaining() < extraNeeded) {
@@ -75,4 +110,5 @@ public class BitContainerWriter {
     public ByteBuffer asReadOnlyBuffer() {
         return buffer.asReadOnlyBuffer().flip().order(ByteOrder.LITTLE_ENDIAN);
     }
+
 }

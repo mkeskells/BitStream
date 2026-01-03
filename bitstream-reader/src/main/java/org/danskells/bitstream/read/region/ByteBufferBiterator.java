@@ -1,17 +1,17 @@
-package org.danskells.bitstream.read.container;
+package org.danskells.bitstream.read.region;
 
-import org.danskells.bitstream.read.biterator.Biterator;
+import org.danskells.bitstream.read.Biterator;
 import org.danskells.bitstream.read.block.Block;
 import org.danskells.bitstream.read.coder.MsbReader;
 
 import java.nio.ByteBuffer;
 
 public class ByteBufferBiterator extends Biterator {
-    private final DefaultBufferReader reader;
+    private final BufferReader reader;
     private Block.BlockBits bits;
 
     public ByteBufferBiterator(long startInclusive, long endExclusive, ByteBuffer backingBuffer) {
-        reader = new DefaultBufferReader(backingBuffer, MsbReader.INSTANCE);
+        reader = new BufferReader(backingBuffer, MsbReader.INSTANCE);
         bits = reader.readBlockBits();
     }
 

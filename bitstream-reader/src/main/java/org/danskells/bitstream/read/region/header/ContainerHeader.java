@@ -1,4 +1,4 @@
-package org.danskells.bitstream.read.container.header;
+package org.danskells.bitstream.read.region.header;
 
 public class ContainerHeader {
     public final long initialOffset;

@@ -1,6 +1,6 @@
 package org.danskells.bitstream.read.block;
 
-import org.danskells.bitstream.read.biterator.Biterator;
+import org.danskells.bitstream.read.Biterator;
 
 public abstract class BitmapBlock extends Block {
 
