@@ -25,7 +25,7 @@ abstract class RegionBits {
     abstract boolean tryIndexedAdvance(Biterator.IndexedLongConsumer action, int actionParameter);
 }
 abstract class RegionBitsBase extends RegionBits {
-    final SimpleBitContainerBiteratorCallback callback;
+    final ContainerBiteratorCallback callback;
     final BufferReader reader;
     //the current position - the minimum next position
     // the min value acceptable for a trySkipTo call
@@ -33,7 +33,7 @@ abstract class RegionBitsBase extends RegionBits {
     // the last value applied to the IndexedLongConsumer of a tryIndexedAdvance (+1)
     long minPosition = Long.MIN_VALUE;
 
-    protected RegionBitsBase(SimpleBitContainerBiteratorCallback callback, BufferReader reader) {
+    protected RegionBitsBase(ContainerBiteratorCallback callback, BufferReader reader) {
         this.callback = callback;
         this.reader = reader;
     }
@@ -57,7 +57,8 @@ abstract class RegionBitsBase extends RegionBits {
         boolean apply(long position, Biterator.IndexedLongConsumer action, int actionParameter, int delta);
     }
 
-
+    /** the end position (inclusive) of the region */
+    long endInclusive;
 
     /** the base address of the current block being read */
     long currentBlockBitAddress;

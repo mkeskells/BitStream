@@ -18,42 +18,35 @@ import java.nio.ByteOrder;
  */
 public class BitRegion {
     private final long startInclusive;
-    private final long endExclusive;
+    private final long endInclusive;
     private final ByteBuffer buffer;
 
-    public BitRegion(long startInclusive, long endExclusive, ByteBuffer buffer) {
+    public BitRegion(long startInclusive, long endInclusive, ByteBuffer buffer) {
         this.startInclusive = startInclusive;
-        this.endExclusive = endExclusive;
+        this.endInclusive = endInclusive;
         this.buffer = buffer;
-    }
-
-    public Biterator biterator() {
-        var readOnly = buffer.asReadOnlyBuffer();
-        //asReadOnly does not preserve byte order
-        readOnly.order(ByteOrder.LITTLE_ENDIAN);
-        return new ByteBufferBiterator(startInclusive, endExclusive, readOnly);
     }
 
     long getStartInclusive() {
         return startInclusive;
     }
 
-    long getEndExclusive() {
-        return endExclusive;
+    long getEndInclusive() {
+        return endInclusive;
     }
 
-    public RegionBits bits(boolean setBits, SimpleBitContainerBiteratorCallback callback) {
+    public RegionBits bits(boolean setBits, ContainerBiteratorCallback callback) {
         var readOnly = buffer.asReadOnlyBuffer();
         //asReadOnly does not preserve byte order
         readOnly.order(ByteOrder.LITTLE_ENDIAN);
         if (setBits) {
-            return new SetBitsRegionBits(callback, newBufferReader(readOnly, MsbReader.INSTANCE));
+            return new SetBitsRegionBits(callback, newBufferReader(readOnly, MsbReader.INSTANCE), startInclusive, endInclusive);
         } else {
             throw new IllegalArgumentException("TODO: implement clear bits region bits");
         }
     }
 
-    BufferReader newBufferReader(ByteBuffer readOnly, MsbReader instance) {
+    protected BufferReader newBufferReader(ByteBuffer readOnly, MsbReader instance) {
         return new BufferReader(readOnly, instance);
     }
 }
@@ -67,8 +60,10 @@ class SetBitsRegionBits extends RegionBitsBase {
 
     private TrySkipOrAdvance trySkipOrAdvance;
 
-    SetBitsRegionBits(SimpleBitContainerBiteratorCallback callback, BufferReader reader) {
+    SetBitsRegionBits(ContainerBiteratorCallback callback, BufferReader reader, long startInclusive, long endExclusive) {
         super(callback, reader);
+        this.currentBlockBitAddress = startInclusive -1; // populateNextBlock will advance min of 1
+        this.endInclusive = endExclusive;
         reader.populateNextBlock(this);
     }
 
@@ -160,7 +155,7 @@ class SetBitsRegionBits extends RegionBitsBase {
         }
         return trySkipNextBlock(position, action, actionParameter, delta);
     }
-    //handle RUN_LENGTH type
+    //handle LIST type
     private boolean try_LIST(long position, IndexedLongConsumer action, int actionParameter, int delta) {
         assert basicChecks(position, delta);
 
@@ -169,7 +164,7 @@ class SetBitsRegionBits extends RegionBitsBase {
             action.accept(list_nextSet, actionParameter);
             return true;
         }
-        //TODO consider skipping to the end of the RLE block, rather han scanning through all blocks
+        //TODO consider skipping to the end of the LIST block, rather than scanning through all blocks
         while (common_remaining-- > 0) {
             reader.populateNextListEntry(this);
             if (position <= list_nextSet) {
@@ -188,9 +183,12 @@ class SetBitsRegionBits extends RegionBitsBase {
             reader.populateNextBlock(this);
             return trySkipOrAdvance.apply(position, action, actionParameter, delta);
         } else {
-            //TODO
-//            return callback.trySkipNextBlock(...)
-            return false;
+            //TODO move signal to TrySkipOrAdvance
+            return switch(delta) {
+                case 0 -> callback.nextRegion_trySkipTo(position, action, actionParameter);
+                case 1 -> callback.nextRegion_tryIndexedAdvance(action, actionParameter);
+                default -> throw new IllegalArgumentException();
+            };
         }
     }
 }

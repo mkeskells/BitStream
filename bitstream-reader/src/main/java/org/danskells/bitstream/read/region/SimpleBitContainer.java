@@ -21,20 +21,11 @@ public class SimpleBitContainer implements BitContainer {
             if (regions.get(i).getStartInclusive() < regions.get(i - 1).getStartInclusive()) {
                 throw new IllegalArgumentException("Regions are not sorted: " + regions.get(i - 1) + " and " + regions.get(i));
             }
-            if (regions.get(i).getStartInclusive() < regions.get(i - 1).getEndExclusive()) {
+            if (regions.get(i).getStartInclusive() <= regions.get(i - 1).getEndInclusive()) {
                 throw new IllegalArgumentException("Regions overlap: " + regions.get(i - 1) + " and " + regions.get(i));
             }
         }
         return true;
-    }
-
-    @Override
-    public Biterator biterator() {
-        return new ParentBiterator(
-                regions
-                        .stream()
-                        .map(x -> (Supplier<Biterator>) x::biterator)
-                        .iterator());
     }
 
     @Override
@@ -70,11 +61,11 @@ public class SimpleBitContainer implements BitContainer {
             return current.tryIndexedAdvance(action, actionParameter);
         }
 
-        public class SimpleBitContainerBiteratorCallback {
+        public class SimpleBitContainerBiteratorCallback implements ContainerBiteratorCallback{
             public boolean nextRegion_trySkipTo(long position, IndexedLongConsumer action, int actionParameter) {
                 currentRegionIndex++;
                 while (currentRegionIndex < regions.size() &&
-                        regions.get(currentRegionIndex).getEndExclusive() <= position) {
+                        regions.get(currentRegionIndex).getEndInclusive() <= position) {
                     currentRegionIndex++;
                 }
                 if (currentRegionIndex >= regions.size()) {
@@ -97,3 +88,8 @@ public class SimpleBitContainer implements BitContainer {
         }
     }
 }
+interface ContainerBiteratorCallback {
+    boolean nextRegion_trySkipTo(long position, Biterator.IndexedLongConsumer action, int actionParameter) ;
+
+    boolean nextRegion_tryIndexedAdvance(Biterator.IndexedLongConsumer action, int actionParameter) ;
+    }

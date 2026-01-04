@@ -25,10 +25,6 @@ public class BufferReader {
         this.header = readHeader();
     }
 
-    public ByteBuffer buffer() {
-        return buffer;
-    }
-
     private FileHeader readHeader() {
         return new FileHeader();
     }
@@ -74,9 +70,6 @@ public class BufferReader {
 
     }
 
-    protected void addBitsToBitmap(int arraySize) {
-    }
-
 
     protected int readUInt(ByteBuffer buffer) {
         return intReader.readUInt(buffer);
@@ -103,6 +96,8 @@ public class BufferReader {
         regionBitsBase.bitmap_byteSize = size + 1; // one based
         regionBitsBase.bitmap_byteStart = buffer.position();
         regionBitsBase.type(BITMAP);
+        //so that whenwe read the next block it works correctly
+        buffer.position( regionBitsBase.bitmap_byteStart + regionBitsBase.bitmap_byteSize );
 //
 //        addBitsToBitmap(arraySize);
 //
@@ -127,7 +122,7 @@ public class BufferReader {
 
     void populateListBlockBits(RegionBitsBase regionBitsBase, int size) {
         regionBitsBase.common_remaining = size + 1; //one based
-        regionBitsBase.common_blockByteSize = readUInt(buffer);
+        regionBitsBase.common_blockByteSize = readUInt(buffer) + 1; //one based
         regionBitsBase.list_nextSet = regionBitsBase.currentBlockBitAddress;
         regionBitsBase.type(LIST);
 //

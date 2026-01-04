@@ -69,13 +69,13 @@ single rle block (i.e. rle-block with one pair length in block specific)
 
 ### Bitmaps
 
-[simple bitmap](examples/bitmap/ex-01.md)
+[simple bitmap](examples/bitmap/bitmap-01.md)
 
 ### RLE Blocks
 
 ### List Blocks
 
-[simple list](examples/array/ex-01.md)
+[simple list](examples/array/array-01.md)
 
 a rle-block
 

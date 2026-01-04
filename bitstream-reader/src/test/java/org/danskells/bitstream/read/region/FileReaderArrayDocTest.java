@@ -1,4 +1,4 @@
-package org.danskells.bitstream.read.region.trace;
+package org.danskells.bitstream.read.region;
 
 import org.danskells.bitstream.read.block.LongArrayBlock;
 import org.danskells.bitstream.read.coder.IRead;
@@ -25,18 +25,18 @@ public class FileReaderArrayDocTest extends AbstractFileReaderDocTest {
 
     public static Stream<Arguments> arrayTestsData() {
         return Stream.of(
-                Arguments.of(new ArrayTestData("Simple example", new byte[]{
-                                0x00,                      // offset = 0 (vint)
-                                0x42,                      // control byte: array bits, 2 values
-                                0x04,                      //   (vint 4) length of bits in bytes
-                                0x07,                      //   (vint 7)                   -> bit position 8
-                                (byte) 0xc4,               //   (vint 3 bytes, lower 5 bits = 00100)
-                                0x47,                      //
-                                (byte) 0x80,               //   (vint 0x8047 << 5 + 4 = 0x1008E0 (or 1051872 in decimal) + 3 = 1051875
-                                //          -> bit position 1051883
-                        }, "ex-01.md", "0,8,1050861", MsbReader.INSTANCE)
+            Arguments.of(new ArrayTestData("Simple example", new byte[]{
+                    0x00,                      // offset = 0 (vint)
+                    0x41,                      // control byte: array bits, 2 values
+                    0x03,                      //   (vint 3) length of bits in bytes (4) - one based
+                    0x07,                      //   (vint 7)                   -> bit position 8
+                    (byte) 0xc4,               //   (vint 3 bytes, lower 5 bits = 00100)
+                    0x47,                      //
+                    (byte) 0x80,               //   (vint 0x8047 << 5 + 4 = 0x1008E0 (or 1051872 in decimal) + 3 = 1051875
+                    //          -> bit position 1051883
+                }, "array-01.md", "0,8,1050861", MsbReader.INSTANCE)
 
-                ));
+            ));
     }
 
     @ParameterizedTest
@@ -52,6 +52,22 @@ public class FileReaderArrayDocTest extends AbstractFileReaderDocTest {
         }
 
         testOrGenerate(testData, blockAndText.expectedText());
+    }
+
+
+    @ParameterizedTest
+    @MethodSource("arrayTestsData")
+    void testArrayBlockReadAndOutput2(ArrayTestData testData) throws IOException {
+
+        var blockAndText = prepareValuesAndText(testData, true);
+        var bits = blockAndText.bits();
+
+        //TODO check we read one block, and it was an array block
+
+        // Verify the bitmap contains the expected bits
+        assertEquals(testData.expectedBits, allBits(bits));
+
+        testOrGenerate(testData, blockAndText.output());
     }
 
 }

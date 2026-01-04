@@ -1,4 +1,7 @@
 ```txt
+     # Read offset to block: 0 (one based) offset = 1 bits
+00   #   (vint 1 byte) 0
+
 03   #                -> control byte
      # 000            -> block type = Bitmap Block
      # 00011          -> (block specific) bytes in bitmap: 4 (1 based)

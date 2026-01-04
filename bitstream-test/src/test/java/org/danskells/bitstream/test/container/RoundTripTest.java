@@ -1,6 +1,7 @@
 package org.danskells.bitstream.test.container;
 
 import org.danskells.bitstream.read.region.BitRegion;
+import org.danskells.bitstream.read.region.SimpleBitContainer;
 import org.danskells.bitstream.write.coder.MsbWriter;
 import org.danskells.bitstream.write.container.BitContainerWriter;
 import org.danskells.bitstream.write.container.ByteBufferAllocator;
@@ -37,7 +38,7 @@ public class RoundTripTest {
     }
 
     List<Long> readFully(BitRegion region) {
-        var stream = region.biterator();
+        var stream = new SimpleBitContainer(List.of(region)).setBits();
         return stream.stream().boxed().toList();
     }
 }
