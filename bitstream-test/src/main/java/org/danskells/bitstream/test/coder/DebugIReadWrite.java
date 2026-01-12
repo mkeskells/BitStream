@@ -24,7 +24,7 @@ public class DebugIReadWrite implements IRead, IWrite {
             return this.name() + "(" + this.ordinal() + ")";
         }
 
-        private static Type[] all = values();
+        private static final Type[] all = values();
 
         public static String fullFromOrdinal(int ordinal) {
             if (ordinal < 0 || ordinal >= all.length) {

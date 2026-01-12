@@ -145,7 +145,7 @@ public class BlockTest {
     };
     var bits = region2.bits(true, callback);
     var content = allBits(bits);
-    var debugText = outputCapture.toString() +"All bits: " +content;
+    var debugText = outputCapture +"All bits: " +content;
     return debugText;
   }
 

@@ -213,7 +213,7 @@ public class DebugBufferReader extends BufferReader {
         for (int i = 0; i < 8; i++) {
             if ((currentByte & (1 << i)) != 0) {
                 if (!bitsSet.isEmpty()) bitsSet.append(", ");
-                bitsSet.append(i + (byteIndex * 8) + baseBitPosition);
+                bitsSet.append(i + (byteIndex * 8L) + baseBitPosition);
             }
         }
 

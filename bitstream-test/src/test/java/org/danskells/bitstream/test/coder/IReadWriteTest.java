@@ -69,7 +69,7 @@ abstract class IReadWriteTest {
     protected static List<T2<Long, Integer>> readULongDataExtra;
 
     protected static Stream<Arguments> readULongDataExtra() {
-        return readULongDataExtra.stream().map(t -> Arguments.of(t._1, t._2));
+        return readULongDataExtra.stream().map(t -> Arguments.of(t._1(), t._2()));
     }
 
     //until junit 6 supported by intellij
@@ -110,7 +110,7 @@ abstract class IReadWriteTest {
     protected static List<T2<Integer, Integer>> readUIntDataExtra;
 
     protected static Stream<Arguments> readUIntDataExtra() {
-        return readUIntDataExtra.stream().map(t -> Arguments.of(t._1, t._2));
+        return readUIntDataExtra.stream().map(t -> Arguments.of(t._1(), t._2()));
     }
 
     protected static Stream<Arguments> readUIntDataCombined() {
@@ -148,7 +148,7 @@ abstract class IReadWriteTest {
     protected static List<T2<Character, Integer>> readUShortDataExtra;
 
     protected static Stream<Arguments> readUShortDataExtra() {
-        return readUShortDataExtra.stream().map(t -> Arguments.of((short) (char) t._1, t._2));
+        return readUShortDataExtra.stream().map(t -> Arguments.of((short) (char) t._1(), t._2()));
     }
 
     protected static Stream<Arguments> readUShortDataCombined() {
