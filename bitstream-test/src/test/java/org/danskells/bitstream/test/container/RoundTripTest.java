@@ -25,12 +25,12 @@ public class RoundTripTest {
     @Test
     void writeBitset() {
         var bitset = of(0, 2, 4, 5, 6, 7, 9, 22, 80);
-        var writer = new BitContainerWriter(1024, ByteBufferAllocator.HEAP, MsbWriter.INSTANCE);
+        var writer = new BitContainerWriter(-99, 1024, ByteBufferAllocator.HEAP, MsbWriter.INSTANCE);
         writer.writeBitmap(0, bitset, 0, 80);
 
         ByteBuffer written = writer.asReadOnlyBuffer();
 
-        var reader = new BitRegion(0, Long.MAX_VALUE, written);
+        var reader = new BitRegion(-99, Long.MAX_VALUE, written);
 
         var allBits = readFully(reader);
         assertEquals(List.of(0L, 2L, 4L, 5L, 6L, 7L, 9L, 22L, 80L), allBits);

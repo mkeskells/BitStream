@@ -1,12 +1,14 @@
 ```txt
+                 Lets assume that the region starts at 100
      # Read offset to block: 0 (one based) offset = 1 bits
+         Prior control point was 99, current block starts at 100
 00   #   (vint 1 byte) 0
 
 41   #                -> control byte
      # 010            -> block type = List Block
      # 00001          -> (block specific) 2 additional values (1 based)
-     #    Value #1 is the control position of the previous block (-1) + block offset (1) = 0
-     #    Control Point is the first value (0)
+     #    Value #1 is the control position of the previous block (99) + block offset (1) = 100
+     #    Control Point is the first value (100)
 
      # Read length of block in bytes: 3 (one based) = 4 bytes
      # the length starts from the end of this value

@@ -1,6 +1,5 @@
 package org.danskells.bitstream.read.region;
 
-import org.danskells.bitstream.read.block.BitmapBlock;
 import org.danskells.bitstream.read.coder.IRead;
 import org.danskells.bitstream.read.coder.MsbReader;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class FileReaderBitmapDocTest extends AbstractFileReaderDocTest {
-    record BitmapTestData(String name, byte[] data, String mdDocFileName, String expectedBits,
+    public record BitmapTestData(String name, byte[] data, String mdDocFileName, String expectedBits,
                           IRead intReader) implements TestData {
         @Override
         public String mdDir() {
@@ -31,28 +30,10 @@ public class FileReaderBitmapDocTest extends AbstractFileReaderDocTest {
                                 0x04,                      // bitmap data: bit 11
                                 0x05,                      // bitmap data: bits 17, 19
                                 (byte) 0xff                // bitmap data: bits 25-32))
-                        }, "bitmap-01.md", "0,1,11,17,19,25,26,27,28,29,30,31,32", MsbReader.INSTANCE)
+                        }, "bitmap-01.md", "100,101,111,117,119,125,126,127,128,129,130,131,132", MsbReader.INSTANCE)
 
                 ));
     }
-
-    @ParameterizedTest
-    @MethodSource("bitmapTestsData")
-    void testBitmapBlockReadAndOutput(BitmapTestData testData) throws IOException {
-
-        var blockAndText = prepareBlockAndText(testData);
-
-        // Verify the bitmap contains the expected bits
-        switch (blockAndText.bits()) {
-            case BitmapBlock.BitmapBlockBits bits -> {
-                assertEquals(testData.expectedBits, allBits(bits));
-            }
-            default -> fail("Expected a BitmapBlock, got " + blockAndText.bits().getClass().getSimpleName());
-        }
-
-        testOrGenerate(testData, blockAndText.expectedText());
-    }
-
 
     @ParameterizedTest
     @MethodSource("bitmapTestsData")

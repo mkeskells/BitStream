@@ -1,6 +1,5 @@
 package org.danskells.bitstream.read.region;
 
-import org.danskells.bitstream.read.block.LongArrayBlock;
 import org.danskells.bitstream.read.coder.IRead;
 import org.danskells.bitstream.read.coder.MsbReader;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -34,26 +33,10 @@ public class FileReaderArrayDocTest extends AbstractFileReaderDocTest {
                     0x47,                      //
                     (byte) 0x80,               //   (vint 0x8047 << 5 + 4 = 0x1008E0 (or 1051872 in decimal) + 3 = 1051875
                     //          -> bit position 1051883
-                }, "array-01.md", "0,8,1050861", MsbReader.INSTANCE)
+                }, "array-01.md", "100,108,1050961", MsbReader.INSTANCE)
 
             ));
     }
-
-    @ParameterizedTest
-    @MethodSource("arrayTestsData")
-    void testArrayBlockReadAndOutput(ArrayTestData testData) throws IOException {
-
-        var blockAndText = prepareBlockAndText(testData);
-
-        // Verify the bitmap contains the expected bits
-        switch (blockAndText.bits()) {
-            case LongArrayBlock.LongArrayBlockBits bits -> assertEquals(testData.expectedBits, allBits(bits));
-            default -> fail("Expected a LongArrayBlock: got " + blockAndText.bits().getClass().getSimpleName());
-        }
-
-        testOrGenerate(testData, blockAndText.expectedText());
-    }
-
 
     @ParameterizedTest
     @MethodSource("arrayTestsData")

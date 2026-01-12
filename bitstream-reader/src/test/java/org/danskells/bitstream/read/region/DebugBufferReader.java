@@ -1,7 +1,6 @@
 package org.danskells.bitstream.read.region;
 
 import org.danskells.bitstream.common.block.BlockType;
-import org.danskells.bitstream.read.block.Block.BlockBits;
 import org.danskells.bitstream.read.coder.IRead;
 import org.danskells.bitstream.read.coder.MsbReader;
 
@@ -38,7 +37,7 @@ public class DebugBufferReader extends BufferReader {
     long controlPointPrior = 0;
     long blockOffset = 0;
 
-    static DebugBufferReader create(ByteBuffer buffer, IRead intReader, PrintStream out, Supplier<String> captureSoFar) {
+    public static DebugBufferReader create(ByteBuffer buffer, IRead intReader, PrintStream out, Supplier<String> captureSoFar) {
         var debugIntReader = new DebugIntReader(intReader);
         var result = new DebugBufferReader(buffer, debugIntReader, out, captureSoFar);
         debugIntReader.owner = result;
@@ -85,7 +84,7 @@ public class DebugBufferReader extends BufferReader {
             return result;
         }
     }
-    ByteBuffer buffer() {
+    public ByteBuffer buffer() {
         return buffer;
     }
 
@@ -94,16 +93,17 @@ public class DebugBufferReader extends BufferReader {
             case COMMON_START -> {
                 checkEndOfBlock(posBefore);
                 out.printf("     # Read offset to block: %d (one based) offset = %d bits%n", result, result + 1);
-                traceReadLong(intReader, posBefore, posAfter, result);
                 this.controlPointPrior = regionBitsBase.currentBlockBitAddress;
                 this.blockOffset = result + 1;
+                out.printf("         Prior control point was %d, current block starts at %d%n",controlPointPrior, controlPointPrior+blockOffset);
+                traceReadLong(intReader, posBefore, posAfter, result);
                 state = ReaderState.UNEXPECTED;
             }
             case LIST_START -> {
                 out.printf("""
                      
                              #    Control Point is the first value (%d)
-                             
+                        
                              # Read length of block in bytes: %d (one based) = %d bytes
                              # the length starts from the end of this value
                         """ ,
@@ -121,34 +121,13 @@ public class DebugBufferReader extends BufferReader {
             }
         }
     }
-    void checkEndOfBlock(int posBeforeNextBlock) {
+    public void checkEndOfBlock(int posBeforeNextBlock) {
       if (blockEndAbs != null) {
         assertEquals(blockEndAbs, posBeforeNextBlock, "expected end of block %d but was %d indicator was before %d%n%s".formatted(blockEndAbs, posBeforeNextBlock, blockEndStart, captureSoFar.get()));
         blockEndAbs = null;
       }
     }
 
-    @Override
-    protected BlockBits decodeListBlockBits(byte control, int size) {
-        showControl(control, BlockType.LIST, size);
-        intTracer.push(new LongArrayIntReaderTracer(buffer, out, intReader));
-        try {
-            return super.decodeListBlockBits(control, size);
-        } finally {
-            intTracer.pop();
-        }
-    }
-
-    @Override
-    protected BlockBits decodeRleBlockBits(byte control, int blockSpecific) {
-        return super.decodeRleBlockBits(control, blockSpecific);
-    }
-
-    @Override
-    protected BlockBits decodeBitmapBlockBits(byte control, int blockSpecific) {
-        showControl(control, BlockType.BITMAP, blockSpecific);
-        return super.decodeBitmapBlockBits(control, blockSpecific);
-    }
 
     @Override
     void populateNextBlock(RegionBitsBase regionBitsBase) {

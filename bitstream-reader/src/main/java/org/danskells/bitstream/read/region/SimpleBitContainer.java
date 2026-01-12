@@ -88,8 +88,3 @@ public class SimpleBitContainer implements BitContainer {
         }
     }
 }
-interface ContainerBiteratorCallback {
-    boolean nextRegion_trySkipTo(long position, Biterator.IndexedLongConsumer action, int actionParameter) ;
-
-    boolean nextRegion_tryIndexedAdvance(Biterator.IndexedLongConsumer action, int actionParameter) ;
-    }

@@ -2,9 +2,6 @@ package org.danskells.bitstream.read.region;
 
 import org.danskells.bitstream.common.block.BlockType;
 import org.danskells.bitstream.common.block.ControlByte;
-import org.danskells.bitstream.read.block.Block.BlockBits;
-import org.danskells.bitstream.read.block.HeapBitmapBlock;
-import org.danskells.bitstream.read.block.HeapLongArrayBlock;
 import org.danskells.bitstream.read.coder.IRead;
 
 import java.nio.ByteBuffer;
@@ -28,48 +25,6 @@ public class BufferReader {
     private FileHeader readHeader() {
         return new FileHeader();
     }
-
-    public BlockBits readBlockBits() {
-        long offset = intReader.readULong(buffer);
-        currentBlockBitAddress += offset;
-        var control = buffer.get();
-        var blockType = BlockType.ofId(control >>> ControlByte.BLOCK_TYPE_SHIFT);
-        var blockSpecific = control & ControlByte.BLOCK_SPECIFIC_MASK;
-        return switch (blockType) {
-            case BITMAP -> decodeBitmapBlockBits(control, blockSpecific);
-            case RUN_LENGTH -> decodeRleBlockBits(control, blockSpecific);
-            case LIST -> decodeListBlockBits(control, blockSpecific);
-        };
-    }
-
-    protected BlockBits decodeListBlockBits(byte control, int size) {
-        var blockLength = readUInt(buffer);
-        var pos = buffer.position();
-        var longs = new long[size];
-        for (int i = 1; i <= size; i++) {
-            var delta = readULong(buffer) + 1;
-            longs[i - 1] = delta;
-        }
-        assert buffer.position() - pos == blockLength : "Read length does not match block length";
-        return new HeapLongArrayBlock(0L, longs).bits(0L);
-    }
-
-    protected BlockBits decodeRleBlockBits(byte control, int blockSpecific) {
-        var blockLength = intReader.readUInt(buffer);
-        var startValue = intReader.readUInt(buffer);
-
-        throw new UnsupportedOperationException();
-    }
-
-
-    protected BlockBits decodeBitmapBlockBits(byte control, int blockSpecific) {
-        var arraySize = blockSpecific + 1; // +1 because 0 is implied
-        addBitsToBitmap(arraySize);
-
-        return new HeapBitmapBlock(currentBlockBitAddress, currentBlockBitAddress + arraySize << 3 + 1, arraySize, buffer, buffer.position()).bits(currentBlockBitAddress);
-
-    }
-
 
     protected int readUInt(ByteBuffer buffer) {
         return intReader.readUInt(buffer);
@@ -98,11 +53,6 @@ public class BufferReader {
         regionBitsBase.type(BITMAP);
         //so that whenwe read the next block it works correctly
         buffer.position( regionBitsBase.bitmap_byteStart + regionBitsBase.bitmap_byteSize );
-//
-//        addBitsToBitmap(arraySize);
-//
-//        return new HeapBitmapBlock(currentBlockBitAddress, currentBlockBitAddress + arraySize << 3 + 1, arraySize, buffer, buffer.position()).bits(currentBlockBitAddress);
-//
     }
 
     void populateRleBlockBits(RegionBitsBase regionBitsBase, int size) {
@@ -125,16 +75,6 @@ public class BufferReader {
         regionBitsBase.common_blockByteSize = readUInt(buffer) + 1; //one based
         regionBitsBase.list_nextSet = regionBitsBase.currentBlockBitAddress;
         regionBitsBase.type(LIST);
-//
-//        var blockLength = readUInt(buffer);
-//        var pos = buffer.position();
-//        var longs = new long[size];
-//        for (int i = 1; i <= size; i++) {
-//            var delta = readULong(buffer) + 1;
-//            longs[i - 1] = delta;
-//        }
-//        assert buffer.position() - pos == blockLength : "Read length does not match block length";
-//        return new HeapLongArrayBlock(0L, longs).bits(0L);
     }
 
     void populateNextListEntry(RegionBitsBase regionBitsBase) {

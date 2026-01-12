@@ -1,10 +1,8 @@
 package org.danskells.bitstream.read.region;
 
 import org.danskells.bitstream.read.Biterator;
-import org.danskells.bitstream.read.block.Block.BlockBits;
 import org.danskells.bitstream.read.coder.IRead;
 import org.danskells.bitstream.read.coder.MsbReader;
-import org.danskells.bitstream.read.region.SimpleBitContainer.SimpleBitContainerBiterator.SimpleBitContainerBiteratorCallback;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -18,7 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-abstract class AbstractFileReaderDocTest {
+public abstract class AbstractFileReaderDocTest {
 
     private enum Mode {
         GENERATE_MD,
@@ -48,51 +46,38 @@ abstract class AbstractFileReaderDocTest {
         default String expectedContent() throws IOException {
             return switch (mode) {
                 case TEST_AGAINST_MD -> String.join("\n",
-                        Files.readAllLines(fullPath()));
+                    Files.readAllLines(fullPath()));
                 case GENERATE_MD -> "XXXXX"; //dummy
             };
         }
     }
 
-    BitsAndText<?> prepareBlockAndText(TestData testData) {
-        var buffer = ByteBuffer.wrap(testData.data());
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        var outputCapture = new ByteArrayOutputStream();
-        var captureStream = new PrintStream(outputCapture);
-        var reader = new DebugBufferReader(buffer, testData.intReader(), captureStream, outputCapture::toString);
-        reader.out().println("```txt");
-        var blockBits = reader.readBlockBits();
-        reader.out().println();
-        reader.out().print("```");
-
-        var output = outputCapture.toString().replace("\r\n", "\n");
-        return new BitsAndText<>(blockBits, output);
-    }
-
-    @Deprecated
-    record BitsAndText<B extends BlockBits>(B bits, String expectedText) {
-    }
     record ValuesAndTextCapture(RegionBits bits, ByteArrayOutputStream expectedText) {
         String output() {
             return expectedText.toString().replace("\r\n", "\n");
         }
     }
-    ValuesAndTextCapture prepareValuesAndText(TestData testData, boolean setBits) {
-        var buffer = ByteBuffer.wrap(testData.data());
+
+    public static ValuesAndTextCapture prepareValuesAndText(TestData testData, boolean setBits) {
+        final var buffer = ByteBuffer.wrap(testData.data());
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-        var outputCapture = new ByteArrayOutputStream();
-        var captureStream = new PrintStream(outputCapture);
-        AtomicReference<DebugBufferReader> readerRef = new AtomicReference<>();
-        var region = new BitRegion(0, Long.MAX_VALUE, buffer) {
+        final var outputCapture = new ByteArrayOutputStream();
+        final var captureStream = new PrintStream(outputCapture);
+        final var readerRef = new AtomicReference<DebugBufferReader>();
+        final var regionStart = 100; //or the positon of the previous block
+        var region = new BitRegion(regionStart, Long.MAX_VALUE, buffer) {
+
             @Override
             protected BufferReader newBufferReader(ByteBuffer readOnly, MsbReader instance) {
                 var result = DebugBufferReader.create(readOnly, instance, captureStream, () -> outputCapture.toString());
                 result.out().println("```txt");
+                result.out().println("                 Lets assume that the region starts at " + regionStart);
 
                 readerRef.set(result);
                 return result;
             }
         };
+
         var callback = new ContainerBiteratorCallback() {
 
             @Override
@@ -113,7 +98,7 @@ abstract class AbstractFileReaderDocTest {
                 return false;
             }
         };
-        var bits =  region.bits(setBits, callback);
+        var bits = region.bits(setBits, callback);
 
         return new ValuesAndTextCapture(bits, outputCapture);
     }
@@ -123,15 +108,15 @@ abstract class AbstractFileReaderDocTest {
         switch (mode) {
             case GENERATE_MD ->
                 // Overwrite the expected content file
-                    Files.writeString(testData.fullPath(),
-                            output.replace("\n", System.lineSeparator()));
+                Files.writeString(testData.fullPath(),
+                    output.replace("\n", System.lineSeparator()));
             case TEST_AGAINST_MD ->
                 // Compare output to expected content
-                    assertEquals(testData.expectedContent(), output, "Output did not match expected content for " + testData.name());
+                assertEquals(testData.expectedContent(), output, "Output did not match expected content for " + testData.name());
         }
     }
 
-    String allBits(BlockBits stream) {
+   public static  String allBits(RegionBits stream) {
         StringBuilder sb = new StringBuilder();
         while (stream.tryIndexedAdvance((val, idx) -> {
             if (!sb.isEmpty()) {
@@ -142,18 +127,5 @@ abstract class AbstractFileReaderDocTest {
         }
         return sb.toString();
     }
-
-
-String allBits(RegionBits stream) {
-    StringBuilder sb = new StringBuilder();
-    while (stream.tryIndexedAdvance((val, idx) -> {
-        if (!sb.isEmpty()) {
-            sb.append(",");
-        }
-        sb.append(val);
-    }, 0)) {
-    }
-    return sb.toString();
-}
 
 }

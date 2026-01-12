@@ -12,38 +12,30 @@ public class BitContainerWriter {
     private ByteBuffer buffer;
     private final ByteBufferAllocator allocator;
     private final IWrite intWriter;
-    private long currentOffset;
+    private long controlPoint;
 
-    public BitContainerWriter(int size, ByteBufferAllocator allocator, IWrite intWriter) {
+    public BitContainerWriter(long containerStart, int size, ByteBufferAllocator allocator, IWrite intWriter) {
         this.allocator = allocator;
         this.intWriter = intWriter;
         this.buffer = allocator.allocate(size);
+        controlPoint = containerStart-1; //one based
     }
 
-    public void writeBitmap(long blockOffset, BitSet bitset, int firstBit, int lastBit) {
-        if (blockOffset < currentOffset) {
-            throw new IllegalArgumentException("backwards");
-        }
-        if (!bitset.get(firstBit)) {
-            throw new IllegalArgumentException("first bit must be set");
-        }
-        int byteCount = (lastBit - firstBit) / 8;
-        if (byteCount * 8 + firstBit != lastBit) {
-            throw new IllegalArgumentException("last bit is not byte aligned");
-        }
-        if (byteCount > 32) {
-            throw new IllegalArgumentException("too large");
-        }
-        if (byteCount == 0) {
-            throw new IllegalArgumentException("too small");
-        }
-        var delta = blockOffset - currentOffset;
+    /** control point is the last bit set, or the first bit in the last byte written, whichever is largest */
+    public void writeBitmap(long blockStart, BitSet bitset, int firstBit, int lastBit) {
+       assert blockStart > controlPoint: "backwards";
+       assert bitset.get(firstBit): "first bit must be set";
+        int byteCount = (lastBit + 7 - firstBit) / 8;
+        assert byteCount <= 32: "too large";
+        assert byteCount > 0 : "too small";
+
+        var delta = blockStart - controlPoint;
         var sizeNeeded = intWriter.sizeOf(delta) + byteCount + 1;
 
         var prevPosition = buffer.position();
 
         ensureCapacity(sizeNeeded);
-        intWriter.writeUnsigned(buffer, delta);
+        intWriter.writeUnsigned(buffer, delta -1); //one based
         putControl(BlockType.BITMAP, byteCount - 1);
 
         var bytes = new byte[byteCount];
@@ -53,26 +45,20 @@ public class BitContainerWriter {
         }
         buffer.put(bytes);
         assert prevPosition + sizeNeeded == buffer.position() : "expected to use allocated space";
+        controlPoint = blockStart + lastBit - firstBit + 1;
     }
 
-    public void writeArray(long blockOffset, long[] arrayValues, int firstIndexInclusive, int lastIndexExclusive) {
-        if (firstIndexInclusive >=lastIndexExclusive) {
-            throw new IllegalArgumentException("array must not be empty");
-        }
-        if (lastIndexExclusive - firstIndexInclusive < 1) {
-            throw new IllegalArgumentException("too small array");
-        }
-        if (lastIndexExclusive - firstIndexInclusive >32) {
-            throw new IllegalArgumentException("too large array");
-        }
+    public void writeArray(long[] arrayValues, int firstIndexInclusive, int lastIndexExclusive) {
+        assert firstIndexInclusive <lastIndexExclusive: "array must not be empty";
+        assert lastIndexExclusive - firstIndexInclusive >= 2: "too small array";
+        assert lastIndexExclusive - firstIndexInclusive <= 33: "too large array";
+
         var sizeNeeded = 1; //control byte
-        long delta = blockOffset - currentOffset -1; //one based
+        long delta = arrayValues[firstIndexInclusive] - controlPoint -1; //one based
         sizeNeeded += intWriter.sizeOf(delta); //offset
         var sizeBeforeDeltas = sizeNeeded;
-        for (int i = firstIndexInclusive; i < lastIndexExclusive; i++ ) {
-            if (arrayValues[i] <= arrayValues[i-1]) {
-                throw new IllegalArgumentException("array must be strictly increasing");
-            }
+        for (int i = firstIndexInclusive + 1; i < lastIndexExclusive; i++ ) {
+            assert arrayValues[i] > arrayValues[i-1]: "array must be strictly increasing";
             sizeNeeded += intWriter.sizeOf(arrayValues[i] - arrayValues[i-1] - 1);
         }
         var arrayEncodedSize = sizeNeeded - sizeBeforeDeltas;
@@ -80,13 +66,12 @@ public class BitContainerWriter {
         ensureCapacity(sizeNeeded);
 
         intWriter.writeUnsigned(buffer, delta);
-        putControl(BlockType.LIST, lastIndexExclusive - firstIndexInclusive -1);
-        intWriter.writeUnsigned(buffer, arrayEncodedSize);
-        intWriter.writeUnsigned(buffer, arrayValues[firstIndexInclusive] - blockOffset - 1);
+        putControl(BlockType.LIST, lastIndexExclusive - firstIndexInclusive -2);
+        intWriter.writeUnsigned(buffer, arrayEncodedSize -1); //one based
         for (int i = firstIndexInclusive + 1; i < lastIndexExclusive; i++ ) {
             intWriter.writeUnsigned(buffer, arrayValues[i] - arrayValues[i-1] - 1);
         }
-
+        controlPoint = arrayValues[firstIndexInclusive];
 
     }
 
